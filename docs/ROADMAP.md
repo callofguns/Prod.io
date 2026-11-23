@@ -1,11 +1,10 @@
 # Prod.io — Roadmap
 
 Built in small, playable increments. Each milestone ends with something you can
-open in a browser and playtest. Visual and UI design work waits for the
-`appledesign` skill to be installed; the simulation and engine work does not.
+open in a browser and playtest. UI design uses the `frontend-design` skill.
 
-## Milestone 0 — Foundation (no gameplay yet)
-- Vite + TypeScript + Phaser project, lint, Vitest.
+## Milestone 0 — Foundation (no gameplay yet) ✅ done
+- Vite + TypeScript + Phaser 4 + Preact project, lint, Vitest.
 - Simulation core: clock (pause / 1x / 2x / 4x), event bus, command dispatcher,
   seeded RNG, money-in-cents helpers, world state types.
 - Single autosaved save with versioning (each in-game day and on quit).

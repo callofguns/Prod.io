@@ -6,8 +6,8 @@
 |---|---|---|
 | Language | TypeScript (strict) | Type safety across a large simulation |
 | Build | Vite | Fast dev server and builds |
-| World rendering | Phaser 3 | Mature 2D engine: tilemaps, sprites, cameras, input |
-| UI (menus, phone, DAW, dashboards) | HTML/CSS overlay above the Phaser canvas (framework chosen with the UI design pass) | Rich, crisp, accessible UI is far easier in the DOM than in canvas |
+| World rendering | Phaser 4 | Mature 2D engine: tilemaps, sprites, cameras, input |
+| UI (menus, phone, DAW, dashboards) | Preact + CSS overlay above the Phaser canvas | Rich, crisp, accessible UI is far easier in the DOM than in canvas |
 | Audio | Web Audio API (possibly Tone.js) | Step sequencer playback with real samples |
 | Tests | Vitest | Fast unit tests for simulation logic |
 | Saves | IndexedDB (localStorage fallback) | Large save files, versioned |
@@ -80,9 +80,31 @@ src/
   ui/               # overlay UI: HUD, phone apps, DAW, menus
   audio/            # sequencer playback, sample loading
   save/             # persistence + migrations
+  app/              # wires sim + Phaser + UI together (Session, ViewBridge)
 tests/              # Vitest, including long headless economy runs
 docs/               # design + architecture + roadmap
 ```
+
+## UI design system: "studio hardware"
+
+The pixel city is the world; the interface is the gear on your desk. Tokens live
+in `src/ui/styles/tokens.css`.
+
+| Role | Token | Value |
+|---|---|---|
+| Panels (sampler plastic) | `--chassis` | `#c4c2b8` |
+| Silkscreen print | `--ink` | `#23221f` |
+| LCD glass | `--lcd` | `#1f1810` |
+| LCD segments (amber) | `--lcd-on` | `#ffb347` |
+| Rubber keys | `--key` | `#3d3f47` |
+| Live / destructive only | `--record` | `#d8432b` |
+
+- **Type:** Pixelify Sans (display, used sparingly), Doto (dot-matrix LCD
+  readouts, with unlit "ghost" segments behind), Schibsted Grotesk (body).
+- **Signature:** the HUD is a tape transport. Game speed is set with transport keys
+  (pause, play, fast-forward), each with an LED, and time and money show on LCDs.
+- Panels are chassis cards with screws and silkscreened labels; buttons are rubber keys.
+- Reduced motion is respected; keyboard focus is always visible.
 
 ## Quality rules
 - `src/sim` must never import from `src/game` or `src/ui` (enforced by lint).

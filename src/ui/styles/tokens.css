@@ -1,0 +1,42 @@
+/*
+ * Prod.io UI design tokens.
+ *
+ * Direction: "studio hardware". The pixel city is the world; the interface is
+ * the gear on your desk. Panels are warm-grey sampler chassis with silkscreened
+ * labels, readouts are amber dot-matrix LCDs, buttons are rubber keys with a
+ * single LED. Record red is reserved for "live" and destructive states.
+ */
+:root {
+  /* Color */
+  --chassis: #c4c2b8;        /* sampler plastic */
+  --chassis-hi: #dedcd3;     /* top-lit bevel */
+  --chassis-lo: #8f8c82;     /* bevel shadow / seams */
+  --ink: #23221f;            /* silkscreen print */
+  --ink-soft: #5b5952;
+  --lcd: #1f1810;            /* unlit LCD glass */
+  --lcd-on: #ffb347;         /* amber segments */
+  --lcd-ghost: #3b2c18;      /* unlit segments */
+  --key: #3d3f47;            /* rubber key */
+  --key-hi: #565963;
+  --record: #d8432b;         /* live / destructive */
+  --void: #121018;           /* outside the world */
+
+  /* Type */
+  --font-display: 'Pixelify Sans', ui-monospace, monospace;
+  --font-lcd: 'Doto', ui-monospace, monospace;
+  --font-body: 'Schibsted Grotesk', system-ui, sans-serif;
+
+  --text-xs: 11px;
+  --text-sm: 13px;
+  --text-md: 15px;
+  --text-lg: 20px;
+  --text-lcd: 22px;
+
+  /* Shape and depth */
+  --radius-chassis: 10px;
+  --radius-key: 6px;
+  --bevel: inset 0 1px 0 var(--chassis-hi), inset 0 -2px 0 var(--chassis-lo);
+  --drop: 0 6px 0 rgba(0, 0, 0, 0.35), 0 14px 30px rgba(0, 0, 0, 0.35);
+
+  --ease-key: cubic-bezier(0.3, 0.7, 0.4, 1);
+}

@@ -25,7 +25,7 @@ Pillars:
 
 | Topic | Decision |
 |---|---|
-| Platform / tech | **[LOCKED]** Web, TypeScript + Phaser 3. Desktop packaging later. |
+| Platform / tech | **[LOCKED]** Web, TypeScript + Phaser 4. Desktop packaging later. |
 | Camera | **[LOCKED]** Top-down 3/4 view, walkable city and interiors. |
 | Music production | **[LOCKED]** Hybrid: a playable simplified step-sequencer with real sounds, scored by skills, gear, loops, trend fit and the pattern itself. |
 | Time | **[LOCKED]** Real-time with pause and 1x / 2x / 4x speeds. |
@@ -33,7 +33,7 @@ Pillars:
 | Life sim | **[LOCKED]** Light needs: energy, hunger, happiness, rent and living costs. |
 | City | **[LOCKED]** One fictional US-inspired city (Atlanta / LA / NYC mix). |
 | Art | **[LOCKED]** Code-drawn placeholders first, real pixel art swapped in later. |
-| UI style | **[LOCKED]** Retro pixel world + modern UI. UI visual work waits until the owner installs the `appledesign` skill. |
+| UI style | **[LOCKED]** Retro pixel world + modern UI, designed with the `frontend-design` skill: a "studio hardware" look (see `docs/ARCHITECTURE.md`, UI design system). |
 | Launch genres | **[LOCKED]** Hip-hop / Trap / Drill and R&B / Pop. |
 | Economy | **[LOCKED]** Real-world based numbers. |
 | Owner's role | **[LOCKED]** Playtesting and direction; Claude writes the code. |

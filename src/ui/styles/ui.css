@@ -1,0 +1,288 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html,
+body {
+  margin: 0;
+  height: 100%;
+  background: var(--void);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: var(--text-md);
+  overflow: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+#game,
+#ui { position: fixed; inset: 0; }
+#ui { pointer-events: none; }
+#ui .interactive { pointer-events: auto; }
+
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--lcd-on); outline-offset: 2px; }
+
+/* ---------- Chassis: the hardware panel every UI surface is built from ---------- */
+.chassis {
+  position: relative;
+  background: var(--chassis);
+  border-radius: var(--radius-chassis);
+  box-shadow: var(--bevel), var(--drop);
+  padding: 10px 14px;
+}
+/* Corner screws */
+.chassis.screws::before,
+.chassis.screws::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, var(--chassis-hi), var(--chassis-lo) 70%);
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.2);
+}
+.chassis.screws::before { left: 7px; }
+.chassis.screws::after { right: 7px; }
+
+/* Silkscreen label printed on the panel */
+.silk {
+  font-family: var(--font-body);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin: 0 0 4px;
+}
+
+/* ---------- LCD readout ---------- */
+.lcd {
+  position: relative;
+  background: var(--lcd);
+  border-radius: 4px;
+  padding: 4px 10px 3px;
+  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6), 0 1px 0 var(--chassis-hi);
+  font-family: var(--font-lcd);
+  font-weight: 800;
+  font-size: var(--text-lcd);
+  line-height: 1.1;
+  color: var(--lcd-on);
+  text-shadow: 0 0 6px rgba(255, 179, 71, 0.55);
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+/* Unlit segments sit behind the lit text, like a real LCD */
+.lcd .ghost {
+  position: absolute;
+  inset: 4px 10px 3px;
+  color: var(--lcd-ghost);
+  text-shadow: none;
+  pointer-events: none;
+}
+.lcd .lit { position: relative; }
+.lcd-sub {
+  font-family: var(--font-lcd);
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: var(--lcd-on);
+  opacity: 0.75;
+  text-shadow: none;
+}
+
+/* ---------- Rubber keys ---------- */
+.key {
+  display: inline-grid;
+  place-items: center;
+  min-width: 40px;
+  height: 36px;
+  padding: 0 10px;
+  border: 0;
+  border-radius: var(--radius-key);
+  background: linear-gradient(var(--key-hi), var(--key));
+  color: #e9e6dc;
+  box-shadow: 0 3px 0 #1d1e23, 0 4px 6px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  transition: transform 80ms var(--ease-key), box-shadow 80ms var(--ease-key);
+  position: relative;
+}
+.key:hover { background: linear-gradient(#61646f, var(--key-hi)); }
+.key:active,
+.key[aria-pressed='true'] {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #1d1e23, 0 1px 2px rgba(0, 0, 0, 0.35);
+}
+/* LED above a key */
+.key .led {
+  position: absolute;
+  top: -9px;
+  left: 50%;
+  width: 6px;
+  height: 6px;
+  margin-left: -3px;
+  border-radius: 50%;
+  background: #4a3a2a;
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.5);
+}
+.key[aria-pressed='true'] .led {
+  background: var(--lcd-on);
+  box-shadow: 0 0 6px var(--lcd-on);
+}
+.key.rec[aria-pressed='true'] .led {
+  background: var(--record);
+  box-shadow: 0 0 6px var(--record);
+}
+.key.wide { min-width: 0; padding: 0 14px; font-weight: 600; font-size: var(--text-sm); }
+.key.danger { background: linear-gradient(#e2573f, var(--record)); box-shadow: 0 3px 0 #7d2414; }
+.key.light {
+  background: linear-gradient(var(--chassis-hi), #cfcdc4);
+  color: var(--ink);
+  box-shadow: 0 3px 0 var(--chassis-lo), 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+/* Small keycap glyph used in prompts and hints */
+.cap {
+  display: inline-grid;
+  place-items: center;
+  min-width: 22px;
+  height: 22px;
+  padding: 0 6px;
+  border-radius: 4px;
+  background: linear-gradient(var(--chassis-hi), #cfcdc4);
+  box-shadow: 0 2px 0 var(--chassis-lo);
+  font-family: var(--font-display);
+  font-size: var(--text-sm);
+  color: var(--ink);
+}
+
+/* ---------- Transport bar (HUD) ---------- */
+.transport {
+  position: absolute;
+  top: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-end;
+  gap: 18px;
+  padding: 8px 22px 12px;
+}
+.transport .group { display: flex; flex-direction: column; }
+.transport .keys { display: flex; gap: 6px; padding-top: 6px; }
+.transport .lcd.clock { min-width: 168px; }
+.transport .lcd.cash { min-width: 150px; text-align: right; }
+.transport .lcd.cash .ghost { text-align: right; }
+.transport .lcd.paused .lit { animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0.25; } }
+
+.glyph { width: 14px; height: 14px; display: block; fill: currentColor; }
+
+/* ---------- Interaction prompt ---------- */
+.prompt {
+  position: absolute;
+  left: 50%;
+  bottom: 52px;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  font-weight: 600;
+  animation: rise 160ms var(--ease-key);
+}
+@keyframes rise { from { transform: translate(-50%, 6px); opacity: 0; } }
+
+/* ---------- Toasts ---------- */
+.toasts {
+  position: absolute;
+  top: 98px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+.toast { font-size: var(--text-md); padding: 6px 14px; animation: rise 160ms var(--ease-key); }
+.toast.lcd { font-family: var(--font-body); font-weight: 600; text-shadow: none; font-variant-numeric: normal; }
+.toast.bad { color: #ff8a70; }
+.toast.good { color: #c6e27a; }
+
+/* ---------- Control hints ---------- */
+.hints {
+  position: absolute;
+  left: 16px;
+  bottom: 14px;
+  display: flex;
+  gap: 14px;
+  font-size: var(--text-sm);
+  color: #a9a59a;
+}
+.hints span { display: inline-flex; align-items: center; gap: 6px; }
+
+/* ---------- Debug panel ---------- */
+.debug {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 280px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 18px;
+}
+.debug h2 {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  font-weight: 600;
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+}
+.debug .row { display: flex; flex-wrap: wrap; gap: 8px; }
+.debug dl {
+  margin: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 10px;
+  font-size: var(--text-sm);
+}
+.debug dt { color: var(--ink-soft); }
+.debug dd { margin: 0; font-variant-numeric: tabular-nums; text-align: right; }
+
+/* ---------- Title screen ---------- */
+.title-screen {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: auto;
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255, 179, 71, 0.08), transparent 60%),
+    var(--void);
+}
+.title-unit { width: min(520px, calc(100vw - 32px)); padding: 26px 28px 24px; }
+.title-unit .lcd.hero {
+  font-size: clamp(48px, 11vw, 84px);
+  padding: 14px 18px 10px;
+  letter-spacing: 0.04em;
+}
+.title-unit .lcd.hero .ghost { inset: 14px 18px 10px; }
+.title-unit .tagline {
+  font-family: var(--font-display);
+  font-size: var(--text-lg);
+  margin: 18px 0 4px;
+}
+.title-unit .lede { color: var(--ink-soft); margin: 0 0 22px; line-height: 1.45; }
+.title-unit .actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.title-unit .key.wide { height: 44px; font-size: var(--text-md); }
+.title-unit .save-info { font-size: var(--text-sm); color: var(--ink-soft); margin: 14px 0 0; }
+.title-unit .confirm { margin-top: 18px; padding-top: 16px; border-top: 1px solid var(--chassis-lo); }
+.title-unit .confirm p { margin: 0 0 12px; }
+.title-unit .error { color: #8f2414; font-weight: 600; margin: 14px 0 0; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+}
