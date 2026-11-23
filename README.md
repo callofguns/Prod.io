@@ -3,7 +3,7 @@
 A 2D top-down music-industry tycoon game. Start as a bedroom producer and build
 an entertainment empire in a living city.
 
-Status: **v1-beta.2**. Milestone 0 done; Milestone 1 in progress (character creation shipped). You can walk around your apartment,
+Status: **v1-beta.3**. Milestone 0 done; Milestone 1 in progress (character creation, phone and bank shipped). You can walk around your apartment,
 run and pause the clock, and resume from the autosave.
 
 Live build: https://prod-io-game.netlify.app (updated after every merge to `main`).
