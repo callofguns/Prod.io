@@ -6,6 +6,7 @@ import { ClockSystem } from './systems/ClockSystem';
 import { EconomySystem } from './systems/EconomySystem';
 import { PlayerSystem } from './systems/PlayerSystem';
 import { DebugSystem } from './systems/DebugSystem';
+import { MessageSystem } from './systems/MessageSystem';
 
 /** A system owns one slice of the game rules. */
 export interface System {
@@ -23,11 +24,13 @@ export class Simulation {
   readonly clock: ClockSystem;
   readonly economy: EconomySystem;
   readonly player: PlayerSystem;
+  readonly messages: MessageSystem;
 
   constructor(public state: GameState) {
     this.clock = new ClockSystem(this);
     this.economy = new EconomySystem(this);
     this.player = new PlayerSystem(this);
+    this.messages = new MessageSystem(this);
     new DebugSystem(this);
   }
 

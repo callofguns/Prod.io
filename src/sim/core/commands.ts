@@ -12,6 +12,7 @@ export interface SimCommands {
   setPaused: { paused: boolean };
   togglePause: Record<string, never>;
   setPlayerLocation: { area: string; x: number; y: number; facing: Facing };
+  markMessageRead: { id: number };
   debugAddCash: { amount: Cents };
   debugSkipMinutes: { minutes: number };
 }

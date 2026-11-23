@@ -1,5 +1,6 @@
 import type { Cents } from './money';
 import type { CalendarTime } from './time';
+import type { Message } from './state';
 
 /**
  * Every event the simulation can announce. Add new events here so that
@@ -14,6 +15,8 @@ export interface SimEvents {
   speedChanged: { speed: number; paused: boolean };
   cashChanged: { cash: Cents; delta: Cents; reason: string };
   notice: { text: string; tone: 'info' | 'good' | 'bad' };
+  messageReceived: { message: Message };
+  inboxChanged: { unread: number };
 }
 
 export type SimEventName = keyof SimEvents;

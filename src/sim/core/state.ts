@@ -4,6 +4,7 @@ import { START_MINUTE, type Speed } from './time';
 import { BACKGROUNDS, backgroundById, startingSkills, type Background, type StartingDebt } from '../../content/backgrounds';
 import { DEFAULT_LOOK_CHOICE, type LookChoice } from '../../content/looks';
 import type { Skills } from '../../content/skills';
+import { startingMessages } from '../../content/startingMessages';
 
 /**
  * The entire saveable game. Plain data only (no class instances or functions)
@@ -20,13 +21,47 @@ export interface GameState {
   };
   player: PlayerState;
   finance: FinanceState;
+  inbox: InboxState;
 }
 
 export type Debt = StartingDebt;
 
+export type TransactionCategory = 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'other';
+
+export interface Transaction {
+  id: number;
+  /** Game minute when it happened. */
+  minute: number;
+  /** Positive = money in, negative = money out. */
+  amount: Cents;
+  description: string;
+  category: TransactionCategory;
+  balanceAfter: Cents;
+}
+
 export interface FinanceState {
   debts: Debt[];
+  /** Newest last. Trimmed to the most recent LEDGER_LIMIT entries. */
+  ledger: Transaction[];
+  nextTransactionId: number;
 }
+
+export interface Message {
+  id: number;
+  minute: number;
+  from: string;
+  subject: string;
+  body: string;
+  read: boolean;
+}
+
+export interface InboxState {
+  /** Newest last. */
+  messages: Message[];
+  nextMessageId: number;
+}
+
+export const LEDGER_LIMIT = 1000;
 
 export interface PlayerState {
   name: string;
@@ -40,7 +75,7 @@ export interface PlayerState {
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 2;
+export const STATE_VERSION = 3;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -73,6 +108,16 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
       cash: bg.cash,
       location: { area: 'apartment', x: -1, y: -1, facing: 'down' },
     },
-    finance: { debts: bg.debts.map((d) => ({ ...d })) },
+    finance: {
+      debts: bg.debts.map((d) => ({ ...d })),
+      ledger: [
+        { id: 1, minute: START_MINUTE, amount: bg.cash, description: 'Opening balance', category: 'opening', balanceAfter: bg.cash },
+      ],
+      nextTransactionId: 2,
+    },
+    inbox: {
+      messages: startingMessages(bg).map((m, i) => ({ ...m, id: i + 1, minute: START_MINUTE, read: false })),
+      nextMessageId: startingMessages(bg).length + 1,
+    },
   };
 }
