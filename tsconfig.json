@@ -12,7 +12,7 @@
     "isolatedModules": true,
     "jsx": "react-jsx",
     "jsxImportSource": "preact",
-    "types": ["vite/client"],
+    "types": ["vite/client", "node"],
     "noEmit": true
   },
   "include": ["src", "tests", "vite.config.ts"]

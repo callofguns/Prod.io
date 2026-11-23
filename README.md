@@ -3,7 +3,7 @@
 A 2D top-down music-industry tycoon game. Start as a bedroom producer and build
 an entertainment empire in a living city.
 
-Status: **Milestone 0 (foundation) done.** You can walk around your apartment,
+Status: **v1-beta**, Milestone 0 (foundation) done. You can walk around your apartment,
 run and pause the clock, and resume from the autosave.
 
 ## Run it
@@ -22,3 +22,9 @@ Other scripts: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`.
 - [Game design](docs/GAME_DESIGN.md): vision, systems, decisions
 - [Architecture](docs/ARCHITECTURE.md): tech stack, code structure, UI design system
 - [Roadmap](docs/ROADMAP.md): milestones, each ending in a playable build
+- [Changelog](CHANGELOG.md): what changed in each release
+
+## Branches and releases
+
+Each update is built on a `feature/*` branch and merged into `main`. Releases are
+tags on `main` (`v1-beta`, `v1-beta.2`, ...). See [CLAUDE.md](CLAUDE.md).

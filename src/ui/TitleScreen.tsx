@@ -4,6 +4,7 @@ import { formatMoney } from '../sim/core/money';
 import { formatClock, toCalendar } from '../sim/core/time';
 import type { GameState } from '../sim/core/state';
 import { Lcd } from './components/Lcd';
+import { APP_VERSION } from '../version';
 
 type Load = { status: 'loading' } | { status: 'ready'; save: SaveRecord | null } | { status: 'error'; message: string };
 
@@ -39,7 +40,7 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
   return (
     <div class="title-screen">
       <main class="title-unit chassis screws">
-        <p class="silk">Prod.io · Milestone 0</p>
+        <p class="silk">Prod.io · {APP_VERSION}</p>
         <Lcd text="PROD.IO" class="hero" label="Prod.io" />
         <h1 class="tagline">Bedroom beats to a music empire.</h1>
         <p class="lede">
