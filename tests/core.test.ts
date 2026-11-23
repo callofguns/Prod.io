@@ -55,3 +55,16 @@ describe('commands', () => {
     expect(JSON.parse(JSON.stringify(sim.state))).toEqual(sim.state);
   });
 });
+
+describe('new game setup', () => {
+  it('applies the chosen background', () => {
+    const state = createNewGameState(3, {
+      name: 'Dee', alias: 'DeeOnTheBeat', background: 'dropout',
+      look: { skin: 'tone2', hairStyle: 'locs', hairColor: 'black', top: 'tee', topColor: 'olive', pantsColor: 'denim' },
+    });
+    expect(state.player.cash).toBe(60_000);
+    expect(state.player.skills.melody).toBe(22);
+    expect(state.player.skills.management).toBe(0);
+    expect(state.finance.debts[0]?.balance).toBe(1_850_000);
+  });
+});

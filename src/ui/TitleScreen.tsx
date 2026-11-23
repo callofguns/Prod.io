@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { readSave, deleteSave, type SaveRecord } from '../save/SaveStore';
+import { readSave, type SaveRecord } from '../save/SaveStore';
 import { formatMoney } from '../sim/core/money';
 import { formatClock, toCalendar } from '../sim/core/time';
 import type { GameState } from '../sim/core/state';
@@ -32,20 +32,16 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
   const save = load.status === 'ready' ? load.save : null;
   const hasBlockingSave = save !== null || load.status === 'error';
 
-  const startNew = async () => {
-    await deleteSave();
-    onNewGame();
-  };
 
   return (
-    <div class="title-screen">
+    <div class="screen">
       <main class="title-unit chassis screws">
         <p class="silk">Prod.io · {APP_VERSION}</p>
         <Lcd text="PROD.IO" class="hero" label="Prod.io" />
         <h1 class="tagline">Bedroom beats to a music empire.</h1>
         <p class="lede">
-          This build is the foundation: walk around your apartment, run the clock and check that your
-          game saves. Production, money and the city come next.
+          Early beta. Start in a one-room apartment with a laptop and a little cash. New parts of
+          the game arrive one update at a time.
         </p>
 
         {!confirming && (
@@ -58,7 +54,7 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
             <button
               class={`key wide ${save ? 'light' : ''}`}
               disabled={load.status === 'loading'}
-              onClick={() => (hasBlockingSave ? setConfirming(true) : startNew())}
+              onClick={() => (hasBlockingSave ? setConfirming(true) : onNewGame())}
             >
               New game
             </button>
@@ -71,11 +67,11 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
         {confirming && (
           <div class="confirm">
             <p>
-              A new game deletes your current save{save ? ` (Day ${toCalendar(save.state.clock.totalMinutes).day})` : ''}.
-              Prod.io keeps one save per playthrough, so this can't be undone.
+              A new game replaces your current save{save ? ` (Day ${toCalendar(save.state.clock.totalMinutes).day})` : ''} as
+              soon as you create your character. Prod.io keeps one save per playthrough, so this can't be undone.
             </p>
             <div class="actions">
-              <button class="key wide danger" onClick={startNew}>Delete save and start</button>
+              <button class="key wide danger" onClick={onNewGame}>Start a new game</button>
               <button class="key wide light" autoFocus onClick={() => setConfirming(false)}>Keep my save</button>
             </div>
           </div>
