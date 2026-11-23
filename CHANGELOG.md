@@ -3,7 +3,9 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
-## Unreleased
+## v1-beta.3
+
+Phone and bank (Milestone 1, update 2), pause menu and settings.
 
 - Hid the "Powered by Netlify" badge on the live site.
 - Pause menu (Esc or the menu button): resume, settings, save and quit to title, and the
