@@ -3,8 +3,11 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
-## Unreleased
+## v1-beta.2
 
+Character creation (Milestone 1, update 1) and Netlify hosting.
+
+- Hosted on Netlify; the live site updates after every merge to `main`.
 - Character creation: name, producer alias, skin tone, hairstyle, hair colour, top and
   pants, with a turnable preview.
 - Three starting backgrounds (Self-taught, Music school dropout, Club DJ) that set
