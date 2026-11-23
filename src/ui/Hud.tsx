@@ -1,11 +1,14 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
 import type { Session } from '../app/Session';
 import { formatMoney } from '../sim/core/money';
 import { SPEEDS, formatClock, pad2, toCalendar, type Speed } from '../sim/core/time';
 import { useBridge, useSimEvents } from './hooks/useSim';
 import { Lcd } from './components/Lcd';
-import { PauseGlyph, PlayGlyph } from './components/Glyphs';
+import { MenuGlyph, PauseGlyph, PlayGlyph } from './components/Glyphs';
 import { DebugPanel } from './DebugPanel';
+import { PauseMenu } from './PauseMenu';
+import { SettingsPanel } from './SettingsPanel';
+import { settings } from '../app/settings';
 
 const SPEED_KEYS: Record<string, Speed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
 
@@ -91,17 +94,51 @@ function Hints() {
       <span><span class="cap">E</span> Interact</span>
       <span><span class="cap">Space</span> Pause</span>
       <span><span class="cap">1</span><span class="cap">2</span><span class="cap">3</span> Speed</span>
+      <span><span class="cap">Esc</span> Menu</span>
       <span><span class="cap">`</span> Debug</span>
     </div>
   );
 }
 
+type Menu = 'none' | 'pause' | 'settings';
+
 export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitle: () => void }) {
   const [debugOpen, setDebugOpen] = useState(false);
+  const [menu, setMenuState] = useState<Menu>('none');
+  const [showHints, setShowHints] = useState(settings.get().showHints);
+  const menuRef = useRef<Menu>('none');
+  /** Whether the clock was already paused before the menu opened, so Resume restores it. */
+  const wasPaused = useRef(false);
+
+  const setMenu = (next: Menu) => {
+    const { sim } = session;
+    if (menuRef.current === 'none' && next !== 'none') {
+      wasPaused.current = sim.state.clock.paused;
+      sim.dispatch('setPaused', { paused: true });
+    } else if (menuRef.current !== 'none' && next === 'none') {
+      sim.dispatch('setPaused', { paused: wasPaused.current });
+    }
+    menuRef.current = next;
+    setMenuState(next);
+  };
+
+  const quit = async () => {
+    await session.autosaver.saveNow();
+    session.stop();
+    onQuitToTitle();
+  };
+
+  useEffect(() => settings.subscribe((s) => setShowHints(s.showHints)), []);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      if (e.code === 'Escape') {
+        e.preventDefault();
+        setMenu(menuRef.current === 'settings' ? 'pause' : menuRef.current === 'pause' ? 'none' : 'pause');
+        return;
+      }
+      if (menuRef.current !== 'none') return;
       const onButton = e.target instanceof HTMLButtonElement;
       if (e.code === 'Space' && !onButton) {
         e.preventDefault();
@@ -118,21 +155,38 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       const el = document.activeElement;
       if (el instanceof HTMLButtonElement) el.blur();
     };
+    const onBlur = () => {
+      if (settings.get().pauseOnBlur && menuRef.current === 'none') setMenu('pause');
+    };
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointerup', onPointerUp);
+    window.addEventListener('blur', onBlur);
     return () => {
       window.removeEventListener('keydown', onKey);
       window.removeEventListener('pointerup', onPointerUp);
+      window.removeEventListener('blur', onBlur);
     };
+    // setMenu only touches refs and stable setters.
   }, [session]);
 
   return (
     <>
       <TransportBar session={session} />
+      <button class="key menu-button interactive" aria-label="Pause menu (Esc)" title="Pause menu (Esc)" onClick={() => setMenu('pause')}>
+        <MenuGlyph />
+      </button>
       <Toasts session={session} />
-      <Prompt session={session} />
-      <Hints />
-      {debugOpen && <DebugPanel session={session} onQuitToTitle={onQuitToTitle} onClose={() => setDebugOpen(false)} />}
+      {menu === 'none' && <Prompt session={session} />}
+      {showHints && <Hints />}
+      {debugOpen && menu === 'none' && <DebugPanel session={session} onQuitToTitle={onQuitToTitle} onClose={() => setDebugOpen(false)} />}
+      {menu !== 'none' && (
+        <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu(menu === 'settings' ? 'pause' : 'none')}>
+          {menu === 'pause' && (
+            <PauseMenu session={session} onResume={() => setMenu('none')} onSettings={() => setMenu('settings')} onQuit={quit} />
+          )}
+          {menu === 'settings' && <SettingsPanel onClose={() => setMenu('pause')} />}
+        </div>
+      )}
     </>
   );
 }

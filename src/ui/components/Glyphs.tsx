@@ -13,3 +13,7 @@ export function PlayGlyph({ count }: { count: number }) {
     </svg>
   );
 }
+
+export const MenuGlyph = () => (
+  <svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="3" width="10" height="2" /><rect x="2" y="6" width="10" height="2" /><rect x="2" y="9" width="10" height="2" /></svg>
+);

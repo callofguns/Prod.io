@@ -6,6 +6,10 @@ the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full
 ## Unreleased
 
 - Hid the "Powered by Netlify" badge on the live site.
+- Pause menu (Esc or the menu button): resume, settings, save and quit to title, and the
+  game version. The clock stops while it's open.
+- Settings (from the title screen or pause menu): world zoom, control hints, reduce motion,
+  and pausing when you leave the tab. Saved per browser.
 
 ## v1-beta.2
 

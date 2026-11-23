@@ -21,7 +21,7 @@ const TURNS = [
   { dir: 'side', flip: true, label: 'left side' },
 ] as const;
 
-const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+const reducedMotion = () => document.documentElement.dataset.motion === 'reduce';
 
 function Preview({ look }: { look: LookChoice }) {
   const canvas = useRef<HTMLCanvasElement>(null);
