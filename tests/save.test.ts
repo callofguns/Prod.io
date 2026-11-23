@@ -39,5 +39,7 @@ describe('migrations', () => {
     expect(state.player.background).toBe('selfTaught');
     expect(state.player.skills.drums).toBe(18);
     expect(state.finance.debts).toEqual([]);
+    expect(state.finance.ledger[0]).toMatchObject({ amount: 125000, balanceAfter: 125000 });
+    expect(state.inbox.messages).toEqual([]);
   });
 });

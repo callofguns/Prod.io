@@ -20,6 +20,10 @@
   --key-hi: #565963;
   --record: #d8432b;         /* live / destructive */
   --void: #121018;           /* outside the world */
+  --glass: #16181d;          /* phone screen */
+  --glass-line: #2a2d35;
+  --glass-text: #ebe7dc;
+  --glass-soft: #9a968b;
 
   /* Type */
   --font-display: 'Pixelify Sans', ui-monospace, monospace;

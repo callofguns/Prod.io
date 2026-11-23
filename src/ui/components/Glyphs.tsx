@@ -17,3 +17,7 @@ export function PlayGlyph({ count }: { count: number }) {
 export const MenuGlyph = () => (
   <svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><rect x="2" y="3" width="10" height="2" /><rect x="2" y="6" width="10" height="2" /><rect x="2" y="9" width="10" height="2" /></svg>
 );
+
+export const PhoneGlyph = () => (
+  <svg class="glyph" viewBox="0 0 14 14" aria-hidden="true"><path d="M4 1h6a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1zm0 2v7h6V3z" /><rect x="6" y="11" width="2" height="1" /></svg>
+);

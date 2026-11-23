@@ -26,6 +26,7 @@ export class Session {
     this.autosaver = new AutoSaver(this.sim, (msg) => this.bridge.toast(msg, 'bad'));
     this.bridge.onInteract = (id) => this.bridge.toast(NOT_YET[id] ?? 'Nothing to do here yet.');
     this.sim.events.on('notice', ({ text, tone }) => this.bridge.toast(text, tone));
+    this.sim.events.on('messageReceived', ({ message }) => this.bridge.toast(`New message from ${message.from}. Press P to read.`));
   }
 
   start(container: HTMLElement): void {

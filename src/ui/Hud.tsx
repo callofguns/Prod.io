@@ -4,11 +4,12 @@ import { formatMoney } from '../sim/core/money';
 import { SPEEDS, formatClock, pad2, toCalendar, type Speed } from '../sim/core/time';
 import { useBridge, useSimEvents } from './hooks/useSim';
 import { Lcd } from './components/Lcd';
-import { MenuGlyph, PauseGlyph, PlayGlyph } from './components/Glyphs';
+import { MenuGlyph, PauseGlyph, PhoneGlyph, PlayGlyph } from './components/Glyphs';
 import { DebugPanel } from './DebugPanel';
 import { PauseMenu } from './PauseMenu';
 import { SettingsPanel } from './SettingsPanel';
 import { settings } from '../app/settings';
+import { Phone, type AppId } from './phone/Phone';
 
 const SPEED_KEYS: Record<string, Speed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
 
@@ -94,6 +95,7 @@ function Hints() {
       <span><span class="cap">E</span> Interact</span>
       <span><span class="cap">Space</span> Pause</span>
       <span><span class="cap">1</span><span class="cap">2</span><span class="cap">3</span> Speed</span>
+      <span><span class="cap">P</span> Phone</span>
       <span><span class="cap">Esc</span> Menu</span>
       <span><span class="cap">`</span> Debug</span>
     </div>
@@ -107,6 +109,14 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
   const [menu, setMenuState] = useState<Menu>('none');
   const [showHints, setShowHints] = useState(settings.get().showHints);
   const menuRef = useRef<Menu>('none');
+  const [phoneApp, setPhoneApp] = useState<AppId | null>(null);
+  const phoneRef = useRef<AppId | null>(null);
+  const setPhone = (app: AppId | null) => {
+    phoneRef.current = app;
+    setPhoneApp(app);
+  };
+  useSimEvents(session.sim, ['inboxChanged']);
+  const unread = session.sim.messages.unreadCount();
   /** Whether the clock was already paused before the menu opened, so Resume restores it. */
   const wasPaused = useRef(false);
 
@@ -133,6 +143,11 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      if (e.code === 'Escape' && phoneRef.current && menuRef.current === 'none') {
+        e.preventDefault();
+        setPhone(null);
+        return;
+      }
       if (e.code === 'Escape') {
         e.preventDefault();
         setMenu(menuRef.current === 'settings' ? 'pause' : menuRef.current === 'pause' ? 'none' : 'pause');
@@ -147,6 +162,8 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
         session.sim.dispatch('setSpeed', { speed: SPEED_KEYS[e.code]! });
       } else if (e.code === 'Backquote') {
         setDebugOpen((open) => !open);
+      } else if (e.code === 'KeyP') {
+        setPhone(phoneRef.current ? null : 'home');
       }
     };
     // A mouse click leaves focus on the button, which would swallow Space.
@@ -175,6 +192,14 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       <button class="key menu-button interactive" aria-label="Pause menu (Esc)" title="Pause menu (Esc)" onClick={() => setMenu('pause')}>
         <MenuGlyph />
       </button>
+      <button class="key phone-button interactive" aria-label={`Phone (P)${unread ? `, ${unread} unread` : ''}`}
+        title="Phone (P)" onClick={() => setPhone(phoneApp ? null : 'home')}>
+        <PhoneGlyph />
+        {unread > 0 && <span class="phone-badge">{unread}</span>}
+      </button>
+      {phoneApp && menu === 'none' && (
+        <Phone sim={session.sim} app={phoneApp} onOpenApp={setPhone} onClose={() => setPhone(null)} />
+      )}
       <Toasts session={session} />
       {menu === 'none' && <Prompt session={session} />}
       {showHints && <Hints />}

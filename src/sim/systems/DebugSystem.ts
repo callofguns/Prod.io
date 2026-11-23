@@ -8,7 +8,7 @@ export class DebugSystem implements System {
   constructor(sim: Simulation) {
     sim.handle('debugAddCash', ({ amount }) => {
       if (!Number.isInteger(amount)) return fail('Amount must be whole cents');
-      sim.economy.adjust(amount, 'Debug');
+      sim.economy.record(amount, 'Debug cash', 'debug');
       return ok;
     });
     sim.handle('debugSkipMinutes', ({ minutes }) => {

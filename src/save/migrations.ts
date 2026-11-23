@@ -17,6 +17,24 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
       finance: { debts: [] },
     };
   },
+  // v2 -> v3: bank ledger and phone inbox. The ledger starts from the current balance.
+  2: (save) => {
+    const player = save.player as { cash: number };
+    const clock = save.clock as { totalMinutes: number };
+    const finance = save.finance as Record<string, unknown>;
+    return {
+      ...save,
+      finance: {
+        ...finance,
+        ledger: [{
+          id: 1, minute: clock.totalMinutes, amount: player.cash, description: 'Balance carried over',
+          category: 'opening', balanceAfter: player.cash,
+        }],
+        nextTransactionId: 2,
+      },
+      inbox: { messages: [], nextMessageId: 1 },
+    };
+  },
 };
 
 export class SaveVersionError extends Error {}
