@@ -6,6 +6,8 @@ an entertainment empire in a living city.
 Status: **v1-beta**, Milestone 0 (foundation) done. You can walk around your apartment,
 run and pause the clock, and resume from the autosave.
 
+Live build: https://prod-io-game.netlify.app (updated after every merge to `main`).
+
 ## Run it
 
 ```bash
