@@ -12,6 +12,10 @@ open in a browser and playtest. UI design uses the `frontend-design` skill.
 - **Playtest:** walk around a room, watch the clock run, quit and resume from the autosave.
 
 ## Milestone 1 — Bedroom Producer (first vertical slice)
+Shipped as six updates, each its own feature branch:
+1. Character creation  2. Phone + bank  3. Needs, sleep, food, rent and debt
+4. Beat maker (sequencer + synthesized sounds)  5. Beat quality + skills  6. BeatHub selling
+
 - Character creation: name, alias, looks, background.
 - Player apartment interior: bed, computer, fridge, door.
 - Needs: energy, hunger, happiness; rent due weekly.

@@ -89,7 +89,7 @@ export class ApartmentScene extends Phaser.Scene {
 
   create(): void {
     registerApartmentArt(this);
-    registerCharacter(this, 'player');
+    registerCharacter(this, 'player', this.deps.sim.state.player.look);
 
     // Room, then the sky seen through the window, then the window frame.
     this.add.image(0, 0, 'room-bg').setOrigin(0, 0).setDepth(-3);

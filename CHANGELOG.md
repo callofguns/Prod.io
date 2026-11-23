@@ -3,6 +3,14 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## Unreleased
+
+- Character creation: name, producer alias, skin tone, hairstyle, hair colour, top and
+  pants, with a turnable preview.
+- Three starting backgrounds (Self-taught, Music school dropout, Club DJ) that set
+  starting skills, cash and debt.
+- Saves from v1-beta upgrade automatically (you become a Self-taught producer).
+
 ## v1-beta
 
 First tagged build: the foundation (Milestone 0).

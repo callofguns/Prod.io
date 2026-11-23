@@ -4,6 +4,7 @@ import { dollars, formatMoney } from '../sim/core/money';
 import { MINUTES_PER_DAY, START_MINUTE, formatClock, toCalendar } from '../sim/core/time';
 import { deleteSave } from '../save/SaveStore';
 import { useSimEvents } from './hooks/useSim';
+import { backgroundById } from '../content/backgrounds';
 
 function savedAgo(ts: number | null): string {
   if (ts === null) return 'Not this session';
@@ -88,6 +89,9 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
       <section>
         <p class="silk">State</p>
         <dl>
+          <dt>Producer</dt><dd>{state.player.alias} ({state.player.name})</dd>
+          <dt>Background</dt><dd>{backgroundById(state.player.background).name}</dd>
+          <dt>Debt</dt><dd>{formatMoney(state.finance.debts.reduce((sum, d) => sum + d.balance, 0))}</dd>
           <dt>Day</dt><dd>{t.day} · {formatClock(t)}</dd>
           <dt>Game minute</dt><dd>{state.clock.totalMinutes}</dd>
           <dt>Cash</dt><dd>{formatMoney(state.player.cash)}</dd>

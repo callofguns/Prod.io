@@ -23,3 +23,21 @@ describe('save', () => {
     expect(() => migrate({ nope: true })).toThrow(SaveVersionError);
   });
 });
+
+describe('migrations', () => {
+  it('upgrades a v1 save to the current version with character defaults', () => {
+    const v1 = {
+      version: 1,
+      createdAt: '2026-11-23T00:00:00.000Z',
+      rng: { seed: 1, state: 1 },
+      clock: { totalMinutes: 600, speed: 1, paused: false },
+      player: { name: 'Player', alias: 'Prod.', cash: 125000, location: { area: 'apartment', x: 10, y: 20, facing: 'down' } },
+    };
+    const state = migrate(v1);
+    expect(state.version).toBe(STATE_VERSION);
+    expect(state.player.cash).toBe(125000);
+    expect(state.player.background).toBe('selfTaught');
+    expect(state.player.skills.drums).toBe(18);
+    expect(state.finance.debts).toEqual([]);
+  });
+});

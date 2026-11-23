@@ -44,6 +44,10 @@ Pillars:
 | Devices | **[LOCKED]** Desktop only (keyboard + mouse). |
 | Difficulty | **[LOCKED]** One fixed start; only the chosen background changes starting conditions. |
 | Saves | **[LOCKED]** One autosaved save per playthrough (saved each in-game day and on quit). |
+| Sounds | **[LOCKED]** All instruments are synthesized in code (Web Audio); no sample files. |
+| Food before the city | **[LOCKED]** A delivery app on the phone: groceries (cheap, cook at home) or takeout (instant, pricey). |
+| Going broke | **[LOCKED]** Never game over: unpaid bills become debt with late fees and interest; loans exist. |
+| Sleep | **[LOCKED]** Choose how long to sleep; the clock fast-forwards and energy refills. |
 | World generation | **[LOCKED]** Mixed: a fixed cast of landmark NPCs/businesses plus seeded random NPCs and companies. |
 
 ## 3. Player
