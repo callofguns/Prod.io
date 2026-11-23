@@ -1,4 +1,4 @@
-# Music Mogul — Technical Architecture
+# Prod.io — Technical Architecture
 
 ## Stack
 
@@ -65,7 +65,7 @@ means editing data, not code. Parody brand names live in one file.
 
 - Versioned save format with migration functions (`v1 → v2 → ...`) so updates
   don't break old saves.
-- Autosave each in-game day, plus manual slots.
+- A single save per playthrough, autosaved each in-game day and on quit (no manual slots).
 
 ## Proposed folder layout
 

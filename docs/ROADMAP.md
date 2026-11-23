@@ -1,4 +1,4 @@
-# Music Mogul — Roadmap
+# Prod.io — Roadmap
 
 Built in small, playable increments. Each milestone ends with something you can
 open in a browser and playtest. Visual and UI design work waits for the
@@ -8,11 +8,12 @@ open in a browser and playtest. Visual and UI design work waits for the
 - Vite + TypeScript + Phaser project, lint, Vitest.
 - Simulation core: clock (pause / 1x / 2x / 4x), event bus, command dispatcher,
   seeded RNG, money-in-cents helpers, world state types.
-- Save/load with versioning and autosave.
+- Single autosaved save with versioning (each in-game day and on quit).
 - A placeholder Phaser scene: a walkable top-down room with a character, plus a debug panel.
-- **Playtest:** walk around a room, watch the clock run, save and reload.
+- **Playtest:** walk around a room, watch the clock run, quit and resume from the autosave.
 
 ## Milestone 1 — Bedroom Producer (first vertical slice)
+- Character creation: name, alias, looks, background.
 - Player apartment interior: bed, computer, fridge, door.
 - Needs: energy, hunger, happiness; rent due weekly.
 - In-game DAW v1: step sequencer with real drum sounds and a few loops; genre/BPM/key.

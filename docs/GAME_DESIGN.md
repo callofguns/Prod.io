@@ -1,4 +1,4 @@
-# Music Mogul — Game Design Document
+# Prod.io — Game Design Document
 
 > Living document. Decisions marked **[LOCKED]** were confirmed by the project owner.
 > Anything marked **[OPEN]** still needs a decision before it is built.
@@ -37,6 +37,14 @@ Pillars:
 | Launch genres | **[LOCKED]** Hip-hop / Trap / Drill and R&B / Pop. |
 | Economy | **[LOCKED]** Real-world based numbers. |
 | Owner's role | **[LOCKED]** Playtesting and direction; Claude writes the code. |
+| Title | **[LOCKED]** Prod.io |
+| Player career | **[LOCKED]** Producer / executive only. The player never becomes a recording artist. |
+| Character creation | **[LOCKED]** Name, producer alias, pixel-art appearance and a starting background. |
+| NPC music | **[LOCKED]** NPC songs are data only; only the player's beats are audible. |
+| Devices | **[LOCKED]** Desktop only (keyboard + mouse). |
+| Difficulty | **[LOCKED]** One fixed start; only the chosen background changes starting conditions. |
+| Saves | **[LOCKED]** One autosaved save per playthrough (saved each in-game day and on quit). |
+| World generation | **[LOCKED]** Mixed: a fixed cast of landmark NPCs/businesses plus seeded random NPCs and companies. |
 
 ## 3. Player
 
@@ -223,11 +231,12 @@ One fictional city. Working name **Bayport**. Districts:
 
 Getting around: walking, bus (cheap, slow), rideshare (fast, costs money), and later your own car.
 
-## 11. Open questions
-- **[OPEN]** Final game title: "Music Mogul" or "Prod.io"?
-- **[OPEN]** Can the player also become an artist (rap or sing themselves), or only producer/exec?
-- **[OPEN]** Character creation: name only, or appearance customization too?
-- **[OPEN]** Save system: a few manual save slots plus autosave? (proposed)
-- **[OPEN]** Starting money and difficulty presets?
-- **[OPEN]** Do NPC songs need audible audio, or are they data only (with only the player's beats playable)?
-- **[OPEN]** Mobile/touch support, or desktop browser (keyboard + mouse) only?
+## 11. Character creation
+Name, producer alias, appearance (skin tone, hair, outfit from pixel-art parts) and a
+**background** that sets starting skills and money. Draft backgrounds:
+- **Self-taught**: higher Drum Programming and Sound Design, little money.
+- **Music school dropout**: higher Melody & Composition and Mixing, student debt.
+- **Club DJ**: higher Marketing and Scene Rep, contacts at The Strip, weaker production skills.
+
+## 12. Open questions
+- None right now. New ones will be added as milestones are planned.

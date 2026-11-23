@@ -1,6 +1,6 @@
-# Prod.io — Music Mogul
+# Prod.io
 
-A 2D top-down music-industry tycoon game (working title **Music Mogul**). Start as a
+A 2D top-down music-industry tycoon game. Start as a
 bedroom producer and build an entertainment empire in a living city.
 
 Status: **planning**. No game code yet.
