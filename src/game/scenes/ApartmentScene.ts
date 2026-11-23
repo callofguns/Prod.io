@@ -6,6 +6,7 @@ import type { ViewBridge } from '../../app/ViewBridge';
 import { registerApartmentArt, ROOM_H, ROOM_W, TILE, DOOR_X, DOOR_W } from '../art/apartmentArt';
 import { registerCharacter } from '../art/characterArt';
 import { darknessAt } from '../daylight';
+import { settings } from '../../app/settings';
 
 interface Rect {
   x: number;
@@ -139,7 +140,12 @@ export class ApartmentScene extends Phaser.Scene {
     this.scale.on('resize', this.fitCamera, this);
     this.fitCamera();
     this.updateLighting();
-    this.events.once('shutdown', () => this.scale.off('resize', this.fitCamera, this));
+    const offSettings = settings.subscribe(() => this.fitCamera());
+    this.events.once('shutdown', () => {
+      this.scale.off('resize', this.fitCamera, this);
+      offSettings();
+    });
+    this.events.once('destroy', offSettings);
   }
 
   override update(_time: number, deltaMs: number): void {
@@ -243,7 +249,9 @@ export class ApartmentScene extends Phaser.Scene {
   private fitCamera(): void {
     const { width, height } = this.scale;
     const available = height - HUD_TOP - HUD_BOTTOM;
-    const zoom = Math.max(1, Math.floor(Math.min((width - 32) / ROOM_W, available / ROOM_H)));
+    const fit = Math.max(1, Math.floor(Math.min((width - 32) / ROOM_W, available / ROOM_H)));
+    const chosen = settings.get().zoom;
+    const zoom = chosen === 'auto' ? fit : chosen;
     const top = HUD_TOP + Math.max(0, (available - ROOM_H * zoom) / 2);
     const cam = this.cameras.main;
     cam.setZoom(zoom);

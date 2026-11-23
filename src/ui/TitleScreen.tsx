@@ -4,6 +4,7 @@ import { formatMoney } from '../sim/core/money';
 import { formatClock, toCalendar } from '../sim/core/time';
 import type { GameState } from '../sim/core/state';
 import { Lcd } from './components/Lcd';
+import { SettingsPanel } from './SettingsPanel';
 import { APP_VERSION } from '../version';
 
 type Load = { status: 'loading' } | { status: 'ready'; save: SaveRecord | null } | { status: 'error'; message: string };
@@ -22,6 +23,7 @@ interface Props {
 export function TitleScreen({ onContinue, onNewGame }: Props) {
   const [load, setLoad] = useState<Load>({ status: 'loading' });
   const [confirming, setConfirming] = useState(false);
+  const [showSettings, setShowSettings] = useState(false);
 
   useEffect(() => {
     readSave()
@@ -58,6 +60,7 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
             >
               New game
             </button>
+            <button class="key wide light" onClick={() => setShowSettings(true)}>Settings</button>
           </div>
         )}
 
@@ -77,6 +80,11 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
           </div>
         )}
       </main>
+      {showSettings && (
+        <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setShowSettings(false)}>
+          <SettingsPanel onClose={() => setShowSettings(false)} />
+        </div>
+      )}
     </div>
   );
 }
