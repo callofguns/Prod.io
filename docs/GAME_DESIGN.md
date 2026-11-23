@@ -1,0 +1,233 @@
+# Music Mogul — Game Design Document
+
+> Living document. Decisions marked **[LOCKED]** were confirmed by the project owner.
+> Anything marked **[OPEN]** still needs a decision before it is built.
+
+## 1. Vision
+
+A 2D top-down business/tycoon sim set in the music industry, in the spirit of
+*Big Ambitions*. You start as a broke bedroom producer and grow, at your own pace,
+into a studio owner, label boss, distributor and finally an entertainment empire,
+inside a living city where artists, producers, labels and trends move on without you.
+
+Pillars:
+
+1. **Hands-on first, management later.** Early game you make beats yourself; late
+   game you run companies that make them for you. Automation is earned.
+2. **Real-industry realism.** Money, contracts, royalties and platform payouts are
+   modeled on the real music business, lightly tuned for fun.
+3. **A living industry.** NPC artists release music, labels sign people, trends shift
+   and competitors grow whether or not the player is involved.
+4. **Interconnected systems.** Social media feeds beat sales, beat sales feed
+   relationships, relationships feed placements, placements feed royalties, and so on.
+
+## 2. Locked decisions
+
+| Topic | Decision |
+|---|---|
+| Platform / tech | **[LOCKED]** Web, TypeScript + Phaser 3. Desktop packaging later. |
+| Camera | **[LOCKED]** Top-down 3/4 view, walkable city and interiors. |
+| Music production | **[LOCKED]** Hybrid: a playable simplified step-sequencer with real sounds, scored by skills, gear, loops, trend fit and the pattern itself. |
+| Time | **[LOCKED]** Real-time with pause and 1x / 2x / 4x speeds. |
+| Brands | **[LOCKED]** Fictional parodies (see §9). |
+| Life sim | **[LOCKED]** Light needs: energy, hunger, happiness, rent and living costs. |
+| City | **[LOCKED]** One fictional US-inspired city (Atlanta / LA / NYC mix). |
+| Art | **[LOCKED]** Code-drawn placeholders first, real pixel art swapped in later. |
+| UI style | **[LOCKED]** Retro pixel world + modern UI. UI visual work waits until the owner installs the `appledesign` skill. |
+| Launch genres | **[LOCKED]** Hip-hop / Trap / Drill and R&B / Pop. |
+| Economy | **[LOCKED]** Real-world based numbers. |
+| Owner's role | **[LOCKED]** Playtesting and direction; Claude writes the code. |
+
+## 3. Player
+
+### 3.1 Needs (light)
+- **Energy**: drains while awake and working; restored by sleep, coffee, energy drinks. Low energy reduces production quality and speed.
+- **Hunger**: restored by food (groceries cheaper than takeout). Starving drains happiness and energy.
+- **Happiness**: affected by success, social life, living conditions, overwork. Affects creativity (a production quality modifier).
+- Living costs: rent (weekly), phone plan, subscriptions (DAW, LoopVault), food.
+
+### 3.2 Skills
+Skills rise with practice (XP from doing), tutorials (time and money), courses, and mentors
+(an NPC with a high relationship). Each skill is 0–100 with diminishing returns.
+
+| Skill | Affects |
+|---|---|
+| Drum Programming | Drum quality, bounce, genre authenticity |
+| Melody & Composition | Melody/chord quality, hook potential |
+| Sound Design | Sound selection quality, uniqueness, sample-pack quality |
+| Mixing | Clarity, balance; big factor in a beat's sellable quality |
+| Mastering | Loudness/polish; ceiling on commercial quality |
+| Vocal Engineering | Recording and mixing artists (studio sessions) |
+| Marketing | Social reach, post performance, campaign efficiency |
+| Business & Negotiation | Contract terms, prices, deal success |
+| Management | Employee efficiency, how many direct reports you can handle |
+
+### 3.3 Reputation
+Separate from money: **Producer Rep** (industry respect), **Public Fame** (followers,
+audience), and per-genre **Scene Rep**. These unlock opportunities (bigger artists reply
+to DMs, labels take meetings, venues book you).
+
+## 4. Music production (hybrid)
+
+### 4.1 Making a beat
+At a computer (home or studio) the player opens the in-game DAW:
+- A **step sequencer** (16 steps x N bars) with drum lanes (kick, snare/clap, hats,
+  808, perc) and loop/melody slots filled from owned loops and sound kits.
+- Settings: genre / subgenre, BPM, key, mood.
+- Time cost: making a beat takes in-game hours, shortened by skill and gear.
+- The player can also choose **Quick Produce** (no sequencer, uses skills only) to keep the
+  late game from becoming tedious.
+
+### 4.2 Quality score
+A beat gets hidden sub-scores which combine into a visible rating:
+
+```
+quality = f(pattern score, skills, gear tier, loop/sample quality, energy & happiness)
+appeal  = f(quality, trend fit for genre/subgenre/BPM, uniqueness, producer reputation)
+```
+
+- **Pattern score** checks the sequencer input against genre heuristics (e.g. trap hi-hat
+  rolls and half-time snares; drill sliding 808s and syncopated snares; R&B swing).
+- **Trend fit** compares the beat to the current market (§7.3).
+- Every beat is saved as an item with its stats, ownership and license history.
+
+### 4.3 Gear
+Laptop/PC tier, DAW tier, headphones, studio monitors, audio interface, microphone,
+MIDI keyboard, acoustic treatment and plugins. Each item has a price, a quality bonus
+and an unlock requirement. Bought at the music-gear store or online.
+
+### 4.4 Loops and samples
+- **LoopVault** (Splice-like): monthly subscription for credits; each loop costs credits.
+  Loops have a quality, genre, mood and *overuse* level (popular loops lower uniqueness).
+- Uncleared samples raise the risk of a takedown or claim when a song blows up.
+- Later the player can sell their own **sample packs and drum kits** (Sound Design skill).
+
+## 5. Beat selling
+
+**BeatHub** (BeatStars-like) marketplace. License tiers with real-world style pricing:
+
+| License | Typical price | Terms |
+|---|---|---|
+| MP3 Lease | $20–40 | Non-exclusive, stream cap (e.g. 50k) |
+| WAV Lease | $40–80 | Non-exclusive, higher cap |
+| Trackout Lease | $80–200 | Stems included |
+| Unlimited Lease | $200–400 | No caps, still non-exclusive |
+| Exclusive | $500–5,000+ | Beat removed from store; producer keeps publishing share and royalties per contract |
+
+- Platform fee or subscription tiers.
+- Sales are driven by beat appeal, store traffic, the player's ViewTube "type beat"
+  channel, social posts and reputation.
+- An NPC artist who leases a beat may release a song with it. If that song blows up,
+  the player gains credits, reputation and (for exclusives or negotiated deals) royalties.
+
+## 6. Social media and platforms (the phone)
+
+The phone is the main UI hub. Apps:
+
+| App | Parody of | Purpose |
+|---|---|---|
+| InstaSnap | Instagram | Posts, stories, followers, DMs to artists |
+| Chirp | X / Twitter | Industry news, trends, beef, announcements |
+| ViewTube | YouTube | Type-beat channel, music videos, views, ad revenue, subscribers |
+| Streamly | Spotify | Streams, monthly listeners, playlists, royalties |
+| Pear Music | Apple Music | Streams (higher payout per stream, smaller audience) |
+| CloudSound | SoundCloud | Underground discovery, early buzz, reposts |
+| BeatHub | BeatStars | Beat store, leases, analytics |
+| LoopVault | Splice | Loops, kits, credits |
+| Bank | — | Balance, transactions, loans |
+| Contacts / Messages | — | Relationships, collab requests, deals |
+| Maps | — | City navigation, fast travel |
+
+Each platform shows analytics: streams/views over time, top tracks, audience by city, revenue.
+
+### Approximate payout model (real-world based)
+| Platform | Per stream / view |
+|---|---|
+| Streamly | ~$0.003–0.005 |
+| Pear Music | ~$0.007–0.01 |
+| CloudSound | ~$0.0025–0.004 (monetized accounts only) |
+| ViewTube | ~$0.0005–0.002 per view (ad share) |
+
+Distributors take a cut or a flat fee. Royalties arrive with a 1–2 month delay, like the real industry.
+
+## 7. Living world
+
+### 7.1 NPCs
+Every industry NPC is an agent with: name, role (rapper, singer, producer, engineer, A&R,
+label exec, manager), genre, skills, fame, money, personality traits, career goals, a
+relationship graph and a career state machine (unknown, rising, buzzing, signed, star,
+fading). NPCs release songs, sign deals, collaborate with each other and buy beats from
+the player *and* from rival producers.
+
+### 7.2 Relationships
+Each relationship is a 0–100 stat with history. It rises from good collabs, paying on time,
+gifts, studio hangs and shout-outs; it drops from ghosting, bad deals, broken contracts and
+beef. It gates collabs, features, placements, rates and introductions (friends of friends).
+
+### 7.3 Trends
+Each genre and subgenre has a popularity curve that moves via a seeded random walk,
+seasonal effects, viral events and the influence of hits (the player's hits included).
+Trends also cover BPM ranges, sounds (e.g. sliding 808s, sped-up vocals) and moods.
+Trends are visible but only partially, via charts, Chirp and "industry insight" reports
+you can pay for.
+
+### 7.4 Competitors
+Rival producers sell beats on BeatHub; rival studios and labels compete for artists, studio
+bookings and chart space. They grow, merge or go bankrupt.
+
+### 7.5 Simulation detail levels
+To keep thousands of NPCs cheap, the simulation runs at two levels:
+- **Detailed (per minute)**: the player, NPCs in the current area, the player's businesses.
+- **Abstract (per in-game day)**: the rest of the industry (releases, streams, deals).
+
+## 8. Businesses and progression
+
+| Stage | Unlock | Gameplay |
+|---|---|---|
+| 1. Bedroom producer | Start | Make and sell beats, build socials, buy loops and gear, pay rent |
+| 2. Freelance producer | Rep + money | Custom beats, collabs, placements, sample packs, renting studio time |
+| 3. Studio owner | Lease/buy a property | Furnish rooms, hourly bookings, hire engineers, maintenance |
+| 4. Label owner | Company registration + capital | Sign artists, advances, recoupment, A&R, release campaigns, marketing budgets |
+| 5. Distributor / publisher | Large catalog + capital | Distribute other labels, publishing admin, sync licensing |
+| 6. Entertainment empire | Multiple companies | Venues, management company, merch, festivals, corporate dashboard |
+
+The player can skip or linger in any stage (e.g. stay an elite independent producer).
+
+### Shared business systems
+- **Properties**: rent or buy, location affects price and foot traffic, renovations.
+- **Employees**: hire with skills and wages, assign roles, morale, firing.
+- **Automation**: employees and managers run routine tasks; the player sets policies
+  (prices, budgets, release cadence).
+- **Contracts**: a generic contract model used everywhere (leases, producer agreements,
+  record deals, employment, distribution) with terms, splits, duration and breach rules.
+- **Accounting**: a double-entry style ledger per company, taxes, loans, P&L reports.
+
+### Contract realism (examples)
+- Producer deals: flat fee + 2–5 "points" on the master + a publishing split.
+- Record deals: advance recouped from artist royalty (traditional 15–20%, or 50/50 net profit deals), 360 deals, term/album commitments.
+- Distribution: the distributor keeps 10–30% or a flat fee.
+
+## 9. Parody names (draft)
+InstaSnap (Instagram), Chirp (X), ViewTube (YouTube), Streamly (Spotify),
+Pear Music (Apple Music), CloudSound (SoundCloud), BeatHub (BeatStars), LoopVault (Splice).
+All names live in a single content file so they can be changed in one place.
+
+## 10. City (draft)
+One fictional city. Working name **Bayport**. Districts:
+- **Eastside**: cheap apartments, where you start; corner stores, local rappers.
+- **Midtown**: music stores, mid-range studios, cafés, CloudSound underground scene.
+- **Downtown**: label offices, banks, real estate agency, high rents.
+- **The Strip**: clubs, venues, nightlife; artists hang out here at night.
+- **Arts District**: warehouses (cheap big spaces for studios), galleries, indie scene.
+- **Hillside**: luxury homes and high-end studios (late game).
+
+Getting around: walking, bus (cheap, slow), rideshare (fast, costs money), and later your own car.
+
+## 11. Open questions
+- **[OPEN]** Final game title: "Music Mogul" or "Prod.io"?
+- **[OPEN]** Can the player also become an artist (rap or sing themselves), or only producer/exec?
+- **[OPEN]** Character creation: name only, or appearance customization too?
+- **[OPEN]** Save system: a few manual save slots plus autosave? (proposed)
+- **[OPEN]** Starting money and difficulty presets?
+- **[OPEN]** Do NPC songs need audible audio, or are they data only (with only the player's beats playable)?
+- **[OPEN]** Mobile/touch support, or desktop browser (keyboard + mouse) only?
