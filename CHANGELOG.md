@@ -3,6 +3,10 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## Unreleased
+
+- Hid the "Powered by Netlify" badge on the live site.
+
 ## v1-beta.2
 
 Character creation (Milestone 1, update 1) and Netlify hosting.

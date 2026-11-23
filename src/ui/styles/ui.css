@@ -392,3 +392,10 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; }
 }
+
+/*
+ * Netlify's free plan injects a "Powered by Netlify" badge iframe. This hides it
+ * visually (unofficial; the official switch needs a paid plan). If Netlify renames
+ * the element, the badge will reappear and this selector needs updating.
+ */
+#nl-badge-frame { display: none !important; }
