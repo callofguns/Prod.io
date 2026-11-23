@@ -1,9 +1,12 @@
 import { dollars, type Cents } from '../sim/core/money';
 import { zeroSkills, type Skills } from './skills';
 
+export type DebtKind = 'student' | 'personal' | 'overdue';
+
 export interface StartingDebt {
   id: string;
   label: string;
+  kind: DebtKind;
   balance: Cents;
   /** Annual interest rate, e.g. 0.055 for 5.5%. */
   apr: number;
@@ -42,6 +45,7 @@ export const BACKGROUNDS: readonly Background[] = [
       {
         id: 'student-loan',
         label: 'Student loan',
+        kind: 'student',
         balance: dollars(18_500),
         apr: 0.055,
         minMonthlyPayment: dollars(190),

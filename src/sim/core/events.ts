@@ -1,6 +1,7 @@
 import type { Cents } from './money';
 import type { CalendarTime } from './time';
-import type { Message } from './state';
+import type { Activity, Debt, Message, NeedsState } from './state';
+import type { FridgeItem } from '../../content/living';
 
 /**
  * Every event the simulation can announce. Add new events here so that
@@ -17,6 +18,10 @@ export interface SimEvents {
   notice: { text: string; tone: 'info' | 'good' | 'bad' };
   messageReceived: { message: Message };
   inboxChanged: { unread: number };
+  needsChanged: { needs: NeedsState };
+  activityChanged: { activity: Activity | null; woke?: { inBed: boolean; minutes: number } };
+  fridgeChanged: { fridge: Record<FridgeItem, number> };
+  debtsChanged: { debts: Debt[]; credit: number };
 }
 
 export type SimEventName = keyof SimEvents;

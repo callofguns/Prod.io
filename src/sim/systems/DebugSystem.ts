@@ -11,6 +11,11 @@ export class DebugSystem implements System {
       sim.economy.record(amount, 'Debug cash', 'debug');
       return ok;
     });
+    sim.handle('debugSetNeeds', (needs) => {
+      Object.assign(sim.state.needs, needs);
+      sim.events.emit('needsChanged', { needs: sim.state.needs });
+      return ok;
+    });
     sim.handle('debugSkipMinutes', ({ minutes }) => {
       if (!Number.isInteger(minutes) || minutes < 1) return fail('Minutes must be a positive whole number');
       sim.clock.skip(minutes);

@@ -31,6 +31,8 @@ const WALK_SPEED = 72; // world px per second
 const FEET_W = 10;
 const FEET_H = 5;
 const START = { x: 152, y: 124 };
+/** Where the player stands after getting out of bed. */
+const BED_SIDE = { x: 34, y: 96 };
 const BOTTOM = ROOM_H - TILE;
 /** Screen space reserved for the transport bar and the control hints, in CSS px. */
 const HUD_TOP = 104;
@@ -133,8 +135,18 @@ export class ApartmentScene extends Phaser.Scene {
       up: K.UP, down: K.DOWN, left: K.LEFT, right: K.RIGHT, w: K.W, a: K.A, s: K.S, d: K.D, e: K.E,
     }, false) as typeof this.keys;
     this.keys.e.on('down', () => {
-      if (this.nearby && !this.deps.sim.state.clock.paused) this.deps.bridge.onInteract(this.nearby.id);
+      const { sim } = this.deps;
+      if (this.nearby && !sim.state.clock.paused && !sim.activity.isBusy()) this.deps.bridge.onInteract(this.nearby.id);
     });
+    // After sleeping in bed, get up beside it.
+    const offWake = this.deps.sim.events.on('activityChanged', ({ woke }) => {
+      if (!woke?.inBed) return;
+      this.player.setPosition(BED_SIDE.x, BED_SIDE.y);
+      this.facing = 'down';
+      this.reportLocation();
+    });
+    this.events.once('shutdown', offWake);
+    this.events.once('destroy', offWake);
 
     this.cameras.main.setBackgroundColor('#121018');
     this.scale.on('resize', this.fitCamera, this);
@@ -152,8 +164,12 @@ export class ApartmentScene extends Phaser.Scene {
     const { sim } = this.deps;
     sim.update(deltaMs);
     this.updateLighting();
-    if (sim.state.clock.paused) {
+    const asleep = sim.state.activity?.kind === 'sleeping';
+    this.player.setVisible(!asleep);
+    this.shadow.setVisible(!asleep);
+    if (sim.state.clock.paused || sim.activity.isBusy()) {
       this.setWalking(false, deltaMs);
+      if (asleep) this.deps.bridge.setPrompt(null);
       return;
     }
     this.move(deltaMs);

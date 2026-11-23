@@ -5,14 +5,20 @@ import { formatClock, toCalendar } from '../../sim/core/time';
 import { useSimEvents } from '../hooks/useSim';
 import { BankApp } from './BankApp';
 import { MessagesApp } from './MessagesApp';
+import { DashBiteApp } from './DashBiteApp';
 
-export type AppId = 'home' | 'bank' | 'messages';
+export type AppId = 'home' | 'bank' | 'messages' | 'dashbite';
 
 const APPS: { id: Exclude<AppId, 'home'>; name: string; glyph: ComponentChildren }[] = [
   {
     id: 'bank',
     name: 'Bank',
     glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3 3 8v2h18V8zM5 11h3v7H5zm5.5 0h3v7h-3zM16 11h3v7h-3zM3 19h18v2H3z" /></svg>,
+  },
+  {
+    id: 'dashbite',
+    name: BRANDS.delivery,
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.5 11h-13zM8 9V7a4 4 0 0 1 8 0v2h-2V7a2 2 0 0 0-4 0v2z" /></svg>,
   },
   {
     id: 'messages',
@@ -26,9 +32,10 @@ interface Props {
   app: AppId;
   onOpenApp: (app: AppId) => void;
   onClose: () => void;
+  onError: (message: string) => void;
 }
 
-export function Phone({ sim, app, onOpenApp, onClose }: Props) {
+export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
   useSimEvents(sim, ['minute', 'inboxChanged']);
   const t = toCalendar(sim.state.clock.totalMinutes);
   const unread = sim.messages.unreadCount();
@@ -65,7 +72,8 @@ export function Phone({ sim, app, onOpenApp, onClose }: Props) {
               ))}
             </div>
           )}
-          {app === 'bank' && <BankApp sim={sim} />}
+          {app === 'bank' && <BankApp sim={sim} onError={onError} />}
+          {app === 'dashbite' && <DashBiteApp sim={sim} onError={onError} />}
           {app === 'messages' && <MessagesApp sim={sim} />}
         </div>
       </div>

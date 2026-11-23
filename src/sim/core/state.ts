@@ -5,6 +5,7 @@ import { BACKGROUNDS, backgroundById, startingSkills, type Background, type Star
 import { DEFAULT_LOOK_CHOICE, type LookChoice } from '../../content/looks';
 import type { Skills } from '../../content/skills';
 import { startingMessages } from '../../content/startingMessages';
+import { CREDIT, NEEDS, STARTING_FRIDGE, type FridgeItem } from '../../content/living';
 
 /**
  * The entire saveable game. Plain data only (no class instances or functions)
@@ -22,7 +23,32 @@ export interface GameState {
   player: PlayerState;
   finance: FinanceState;
   inbox: InboxState;
+  needs: NeedsState;
+  home: HomeState;
+  /** What the player is busy doing, if anything (blocks walking). */
+  activity: Activity | null;
 }
+
+export interface NeedsState {
+  energy: number;
+  food: number;
+  mood: number;
+}
+
+export interface Delivery {
+  id: number;
+  arrivesAt: number;
+  description: string;
+  adds: Partial<Record<FridgeItem, number>>;
+}
+
+export interface HomeState {
+  fridge: Record<FridgeItem, number>;
+  deliveries: Delivery[];
+  nextDeliveryId: number;
+}
+
+export type Activity = { kind: 'sleeping'; startedAt: number; until: number; inBed: boolean };
 
 export type Debt = StartingDebt;
 
@@ -41,6 +67,8 @@ export interface Transaction {
 
 export interface FinanceState {
   debts: Debt[];
+  /** 300-850, like a FICO score. */
+  credit: number;
   /** Newest last. Trimmed to the most recent LEDGER_LIMIT entries. */
   ledger: Transaction[];
   nextTransactionId: number;
@@ -75,7 +103,7 @@ export interface PlayerState {
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 3;
+export const STATE_VERSION = 4;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -110,6 +138,7 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
     },
     finance: {
       debts: bg.debts.map((d) => ({ ...d })),
+      credit: CREDIT.start[bg.id] ?? 650,
       ledger: [
         { id: 1, minute: START_MINUTE, amount: bg.cash, description: 'Opening balance', category: 'opening', balanceAfter: bg.cash },
       ],
@@ -119,5 +148,8 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
       messages: startingMessages(bg).map((m, i) => ({ ...m, id: i + 1, minute: START_MINUTE, read: false })),
       nextMessageId: startingMessages(bg).length + 1,
     },
+    needs: { ...NEEDS.start },
+    home: { fridge: { ...STARTING_FRIDGE }, deliveries: [], nextDeliveryId: 1 },
+    activity: null,
   };
 }

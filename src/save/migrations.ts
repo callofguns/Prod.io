@@ -1,6 +1,7 @@
 import { STATE_VERSION, type GameState } from '../sim/core/state';
 import { DEFAULT_LOOK_CHOICE } from '../content/looks';
 import { backgroundById, startingSkills } from '../content/backgrounds';
+import { CREDIT, NEEDS, STARTING_FRIDGE } from '../content/living';
 
 /**
  * migrations[n] upgrades a save from version n to n + 1. When GameState
@@ -33,6 +34,22 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
         nextTransactionId: 2,
       },
       inbox: { messages: [], nextMessageId: 1 },
+    };
+  },
+  // v3 -> v4: needs, fridge, activity, credit score and debt kinds.
+  3: (save) => {
+    const finance = save.finance as { debts: Array<Record<string, unknown>> } & Record<string, unknown>;
+    const player = save.player as { background?: string };
+    return {
+      ...save,
+      finance: {
+        ...finance,
+        debts: finance.debts.map((d) => ({ kind: 'student', ...d })),
+        credit: CREDIT.start[player.background ?? ''] ?? 650,
+      },
+      needs: { ...NEEDS.start },
+      home: { fridge: { ...STARTING_FRIDGE }, deliveries: [], nextDeliveryId: 1 },
+      activity: null,
     };
   },
 };

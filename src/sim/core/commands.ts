@@ -1,6 +1,8 @@
 import type { Cents } from './money';
 import type { Facing } from './state';
 import type { Speed } from './time';
+import type { SleepPlan } from '../systems/ActivitySystem';
+import type { Meal } from '../systems/HomeSystem';
 
 /**
  * Every action the view can ask the simulation to perform. The view never
@@ -13,8 +15,15 @@ export interface SimCommands {
   togglePause: Record<string, never>;
   setPlayerLocation: { area: string; x: number; y: number; facing: Facing };
   markMessageRead: { id: number };
+  startSleep: { plan: SleepPlan };
+  wakeUp: Record<string, never>;
+  eat: { meal: Meal };
+  orderDelivery: { itemId: string };
+  takeLoan: { amount: Cents };
+  performAction: { objectId: string; actionId: string };
   debugAddCash: { amount: Cents };
   debugSkipMinutes: { minutes: number };
+  debugSetNeeds: { energy?: number; food?: number; mood?: number };
 }
 
 export type SimCommandName = keyof SimCommands;
