@@ -28,9 +28,15 @@ describe('bank ledger', () => {
     const sim = newSim();
     sim.economy.record(dollars(-20), 'Old purchase', 'other');
     sim.dispatch('debugSkipMinutes', { minutes: 8 * MINUTES_PER_DAY });
+    const before = sim.economy.flow(7); // includes the first week's rent
     sim.economy.record(dollars(-30), 'Groceries', 'food');
     sim.economy.record(dollars(100), 'Sale', 'income');
-    expect(sim.economy.flow(7)).toEqual({ income: 10_000, spending: 3_000 });
+    const after = sim.economy.flow(7);
+    expect(after.income - before.income).toBe(10_000);
+    expect(after.spending - before.spending).toBe(3_000);
+    // The $20 purchase from 8 days ago is outside the window.
+    expect(sim.state.finance.ledger.filter((t) => t.description === 'Old purchase')).toHaveLength(1);
+    expect(before.spending).toBe(26_500);
   });
 
   it('keeps the ledger bounded', () => {

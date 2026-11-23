@@ -32,7 +32,7 @@ export class ClockSystem implements System {
   advance(realMs: number): void {
     const clock = this.sim.state.clock;
     if (clock.paused || realMs <= 0) return;
-    this.accumulatorMs += realMs * clock.speed;
+    this.accumulatorMs += realMs * (this.sim.activity.timeScale() ?? clock.speed);
     let steps = Math.floor(this.accumulatorMs / REAL_MS_PER_GAME_MINUTE);
     this.accumulatorMs -= steps * REAL_MS_PER_GAME_MINUTE;
     if (steps > MAX_MINUTES_PER_UPDATE) {

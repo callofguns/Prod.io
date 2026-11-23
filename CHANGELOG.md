@@ -3,6 +3,22 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## Unreleased
+
+- Needs: Energy, Food and Mood, shown as LED meters on the HUD. Low levels hurt your mood;
+  at zero energy you pass out wherever you are.
+- Press E on objects for a menu of actions (number keys pick one).
+- Sleep in bed until 7:00, until 9:00, 8 hours, or a 2-hour nap. Time fast-forwards while
+  you sleep, and a full night improves your mood.
+- Food: cook at the stove, snack or eat takeout from the fridge, drink energy drinks.
+- DashBite app: order groceries and takeout; deliveries arrive in 30 to 50 minutes.
+- Rent ($265 every Monday from week two) and a $45 monthly phone plan, paid automatically.
+- Student loan payments on the 1st with monthly interest.
+- Never game over: unpaid bills become overdue debt with late fees (collected when you can
+  afford it), and missed payments drop your credit score.
+- Bank app: credit score, upcoming bills, and personal loans priced by your credit.
+- Saves from v1-beta.3 upgrade automatically.
+
 ## v1-beta.3
 
 Phone and bank (Milestone 1, update 2), pause menu and settings.

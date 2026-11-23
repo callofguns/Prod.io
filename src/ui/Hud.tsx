@@ -10,12 +10,16 @@ import { PauseMenu } from './PauseMenu';
 import { SettingsPanel } from './SettingsPanel';
 import { settings } from '../app/settings';
 import { Phone, type AppId } from './phone/Phone';
+import { ActionMenu, performAction } from './ActionMenu';
+import { SleepOverlay } from './SleepOverlay';
+import { Meter } from './components/Meter';
 
 const SPEED_KEYS: Record<string, Speed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
 
 function TransportBar({ session }: { session: Session }) {
   const { sim } = session;
-  useSimEvents(sim, ['minute', 'speedChanged', 'cashChanged']);
+  useSimEvents(sim, ['minute', 'speedChanged', 'cashChanged', 'needsChanged']);
+  const needs = sim.state.needs;
   const { totalMinutes, speed, paused } = sim.state.clock;
   const t = toCalendar(totalMinutes);
   const clock = `${t.weekday.toUpperCase()} ${formatClock(t)}`;
@@ -58,6 +62,14 @@ function TransportBar({ session }: { session: Session }) {
         </div>
       </div>
       <div class="group">
+        <p class="silk">Levels</p>
+        <div class="levels">
+          <Meter label="Energy" value={needs.energy} />
+          <Meter label="Food" value={needs.food} />
+          <Meter label="Mood" value={needs.mood} />
+        </div>
+      </div>
+      <div class="group">
         <p class="silk">Balance</p>
         <Lcd text={formatMoney(sim.state.player.cash)} label="Balance" class="cash" />
       </div>
@@ -68,7 +80,7 @@ function TransportBar({ session }: { session: Session }) {
 function Prompt({ session }: { session: Session }) {
   useBridge(session.bridge);
   const prompt = session.bridge.prompt;
-  if (!prompt) return null;
+  if (!prompt || session.bridge.actionsFor) return null;
   return (
     <div class="prompt chassis" key={prompt.id}>
       <span class="cap">E</span>
@@ -143,6 +155,20 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      const actionsFor = session.bridge.actionsFor;
+      if (actionsFor && menuRef.current === 'none') {
+        if (e.code === 'Escape') {
+          e.preventDefault();
+          session.bridge.openActions(null);
+          return;
+        }
+        const n = /^Digit([1-9])$/.exec(e.code)?.[1];
+        if (n) {
+          const option = session.sim.actions.list(actionsFor)[Number(n) - 1];
+          if (option && !option.disabled) performAction(session, actionsFor, option.id);
+          return;
+        }
+      }
       if (e.code === 'Escape' && phoneRef.current && menuRef.current === 'none') {
         e.preventDefault();
         setPhone(null);
@@ -198,10 +224,13 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
         {unread > 0 && <span class="phone-badge">{unread}</span>}
       </button>
       {phoneApp && menu === 'none' && (
-        <Phone sim={session.sim} app={phoneApp} onOpenApp={setPhone} onClose={() => setPhone(null)} />
+        <Phone sim={session.sim} app={phoneApp} onOpenApp={setPhone} onClose={() => setPhone(null)}
+          onError={(msg) => session.bridge.toast(msg, 'bad')} />
       )}
       <Toasts session={session} />
       {menu === 'none' && <Prompt session={session} />}
+      {menu === 'none' && <ActionMenu session={session} />}
+      <SleepOverlay session={session} />
       {showHints && <Hints />}
       {debugOpen && menu === 'none' && <DebugPanel session={session} onQuitToTitle={onQuitToTitle} onClose={() => setDebugOpen(false)} />}
       {menu !== 'none' && (

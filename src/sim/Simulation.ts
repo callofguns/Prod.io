@@ -7,6 +7,11 @@ import { EconomySystem } from './systems/EconomySystem';
 import { PlayerSystem } from './systems/PlayerSystem';
 import { DebugSystem } from './systems/DebugSystem';
 import { MessageSystem } from './systems/MessageSystem';
+import { NeedsSystem } from './systems/NeedsSystem';
+import { ActivitySystem } from './systems/ActivitySystem';
+import { HomeSystem } from './systems/HomeSystem';
+import { BillsSystem } from './systems/BillsSystem';
+import { ActionSystem } from './systems/ActionSystem';
 
 /** A system owns one slice of the game rules. */
 export interface System {
@@ -25,12 +30,22 @@ export class Simulation {
   readonly economy: EconomySystem;
   readonly player: PlayerSystem;
   readonly messages: MessageSystem;
+  readonly needs: NeedsSystem;
+  readonly activity: ActivitySystem;
+  readonly home: HomeSystem;
+  readonly bills: BillsSystem;
+  readonly actions: ActionSystem;
 
   constructor(public state: GameState) {
     this.clock = new ClockSystem(this);
     this.economy = new EconomySystem(this);
     this.player = new PlayerSystem(this);
     this.messages = new MessageSystem(this);
+    this.needs = new NeedsSystem(this);
+    this.activity = new ActivitySystem(this);
+    this.home = new HomeSystem(this);
+    this.bills = new BillsSystem(this);
+    this.actions = new ActionSystem(this);
     new DebugSystem(this);
   }
 

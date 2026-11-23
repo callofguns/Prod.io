@@ -18,6 +18,8 @@ type Listener = () => void;
 
 export class ViewBridge {
   prompt: Prompt | null = null;
+  /** Object whose action menu is open (after pressing E), if any. */
+  actionsFor: string | null = null;
   toasts: Toast[] = [];
   /** Set by the app: what happens when the player presses E on something. */
   onInteract: (id: string) => void = () => {};
@@ -33,6 +35,13 @@ export class ViewBridge {
   setPrompt(prompt: Prompt | null): void {
     if (prompt?.id === this.prompt?.id) return;
     this.prompt = prompt;
+    // Walking away from an object closes its menu.
+    if (this.actionsFor && this.actionsFor !== prompt?.id) this.actionsFor = null;
+    this.notify();
+  }
+
+  openActions(objectId: string | null): void {
+    this.actionsFor = objectId;
     this.notify();
   }
 

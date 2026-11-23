@@ -21,7 +21,7 @@ interface Props {
 /** Playtest cheats. Toggled with the backtick key. */
 export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
   const { sim, autosaver, bridge } = session;
-  useSimEvents(sim, ['minute', 'cashChanged', 'speedChanged']);
+  useSimEvents(sim, ['minute', 'cashChanged', 'speedChanged', 'needsChanged']);
   const [confirmDelete, setConfirmDelete] = useState(false);
   const { state } = sim;
   const t = toCalendar(state.clock.totalMinutes);
@@ -54,6 +54,16 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
         <div class="row">
           <button class="key wide" onClick={() => sim.dispatch('debugSkipMinutes', { minutes: 60 })}>Skip 1 hour</button>
           <button class="key wide" onClick={skipToMorning}>Skip to 8:00</button>
+          <button class="key wide" onClick={() => sim.dispatch('debugSkipMinutes', { minutes: 7 * MINUTES_PER_DAY })}>Skip 1 week</button>
+        </div>
+      </section>
+
+      <section>
+        <p class="silk">Needs</p>
+        <div class="row">
+          <button class="key wide" onClick={() => sim.dispatch('debugSetNeeds', { energy: 15 })}>Tired</button>
+          <button class="key wide" onClick={() => sim.dispatch('debugSetNeeds', { food: 10 })}>Hungry</button>
+          <button class="key wide" onClick={() => sim.dispatch('debugSetNeeds', { energy: 100, food: 100, mood: 100 })}>Refill</button>
         </div>
       </section>
 
@@ -92,6 +102,8 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
           <dt>Producer</dt><dd>{state.player.alias} ({state.player.name})</dd>
           <dt>Background</dt><dd>{backgroundById(state.player.background).name}</dd>
           <dt>Debt</dt><dd>{formatMoney(state.finance.debts.reduce((sum, d) => sum + d.balance, 0))}</dd>
+          <dt>Needs</dt><dd>E {Math.round(state.needs.energy)} · F {Math.round(state.needs.food)} · M {Math.round(state.needs.mood)}</dd>
+          <dt>Credit</dt><dd>{state.finance.credit}</dd>
           <dt>Day</dt><dd>{t.day} · {formatClock(t)}</dd>
           <dt>Game minute</dt><dd>{state.clock.totalMinutes}</dd>
           <dt>Cash</dt><dd>{formatMoney(state.player.cash)}</dd>

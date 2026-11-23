@@ -1,6 +1,7 @@
 import { BRANDS } from './brands';
 import type { Background } from './backgrounds';
 import { formatMoney } from '../sim/core/money';
+import { RENT } from './living';
 
 export interface MessageTemplate {
   from: string;
@@ -17,6 +18,11 @@ export function startingMessages(bg: Background): MessageTemplate[] {
       body: `Welcome to ${BRANDS.bank}. Your opening balance of ${formatMoney(bg.cash)} is available now. Every payment in and out of your account appears in the Bank app.`,
     },
   ];
+  messages.push({
+    from: RENT.landlord,
+    subject: 'Welcome to the building',
+    body: `Keys are yours. Rent is ${formatMoney(RENT.weekly)} a week, auto-paid from your account every Monday morning starting next Monday. Miss it and there is a ${formatMoney(RENT.lateFee)} late fee. Groceries are in the fridge to get you started.`,
+  });
   for (const debt of bg.debts) {
     messages.push({
       from: BRANDS.studentLoans,
