@@ -41,7 +41,10 @@ Pillars:
 | Player career | **[LOCKED]** Producer / executive only. The player never becomes a recording artist. |
 | Character creation | **[LOCKED]** Name, producer alias, pixel-art appearance and a starting background. |
 | NPC music | **[LOCKED]** NPC songs are data only; only the player's beats are audible. |
-| Devices | **[LOCKED]** Desktop only (keyboard + mouse). |
+| Devices | **[LOCKED]** Desktop (keyboard + mouse) and iPhone. Changed from "desktop only" after Milestone 1. |
+| Phone orientation | **[LOCKED]** Landscape only; a rotate notice covers portrait. |
+| Touch controls | **[LOCKED]** Tap the floor to walk, tap furniture to walk over and use it; optional on-screen joystick in Settings. |
+| Install | **[LOCKED]** Installable web app (Add to Home Screen): full screen, offline play. App Store not planned for now. |
 | Difficulty | **[LOCKED]** One fixed start; only the chosen background changes starting conditions. |
 | Saves | **[LOCKED]** One autosaved save per playthrough (saved each in-game day and on quit). |
 | Sounds | **[LOCKED]** All instruments are synthesized in code (Web Audio); no sample files. |

@@ -1,0 +1,284 @@
+/*
+ * Phones and touch. Prod.io plays in landscape on phones (a rotate notice
+ * covers portrait). "Compact" = a short landscape screen (≤ 520px tall):
+ * iPhones are 343-430px tall in landscape. Everything keeps clear of the
+ * notch and home indicator via the --safe-* insets.
+ */
+
+/* ---------- Everywhere: safe-area aware placement ---------- */
+.corner-keys {
+  position: absolute;
+  top: calc(20px + var(--safe-top));
+  left: calc(16px + var(--safe-left));
+  display: flex;
+  gap: 8px;
+}
+.corner-keys .menu-button { position: static; }
+.debug-button { font-family: var(--font-display); font-size: var(--text-sm); font-weight: 600; }
+.transport { top: calc(12px + var(--safe-top)); }
+.phone-button { right: calc(16px + var(--safe-right)); bottom: calc(14px + var(--safe-bottom)); }
+.phone { right: calc(16px + var(--safe-right)); bottom: calc(62px + var(--safe-bottom)); }
+.hints { left: calc(16px + var(--safe-left)); bottom: calc(14px + var(--safe-bottom)); }
+.debug { right: calc(12px + var(--safe-right)); top: calc(12px + var(--safe-top)); max-height: calc(var(--app-h) - 24px); overflow-y: auto; }
+
+/* Full-screen menus: margin-auto centring scrolls properly when content is taller than the screen. */
+.screen {
+  display: flex;
+  padding: calc(24px + var(--safe-top)) calc(16px + var(--safe-right)) calc(24px + var(--safe-bottom)) calc(16px + var(--safe-left));
+}
+.screen > * { margin: auto; }
+.backdrop {
+  padding: calc(16px + var(--safe-top)) calc(16px + var(--safe-right)) calc(16px + var(--safe-bottom)) calc(16px + var(--safe-left));
+}
+
+/* Panels that scroll as a whole: their sections keep their natural height
+   (a horizontally scrolling row would otherwise be squashed to nothing). */
+.daw > *,
+.menu > * { flex-shrink: 0; }
+
+/* The prompt is a button you can tap (E still works). */
+button.prompt { border: 0; font: inherit; color: var(--ink); cursor: pointer; }
+
+/* Action menu header with a close button. */
+.action-head { display: flex; align-items: center; justify-content: space-between; }
+.action-head .silk { margin: 0; }
+.action-close {
+  width: 28px;
+  height: 28px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--chassis-hi);
+  box-shadow: 0 2px 0 var(--chassis-lo);
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+/* Touch hints (instead of the keyboard guide). */
+.hints.touch span + span::before { content: '·'; margin-right: 14px; }
+
+/* ---------- Joystick ---------- */
+.joystick {
+  position: absolute;
+  left: calc(28px + var(--safe-left));
+  bottom: calc(28px + var(--safe-bottom));
+  width: 120px;
+  height: 120px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(196, 194, 184, 0.16);
+  box-shadow: inset 0 0 0 2px rgba(196, 194, 184, 0.35);
+  touch-action: none;
+}
+.joystick-knob {
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(var(--key-hi), var(--key));
+  box-shadow: 0 3px 0 #1d1e23, 0 4px 10px rgba(0, 0, 0, 0.4);
+  pointer-events: none;
+}
+
+/* ---------- Rotate notice (phones held upright) ---------- */
+.rotate-notice { display: none; }
+@media (orientation: portrait) and (max-width: 600px) {
+  .rotate-notice {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: grid;
+    place-items: center;
+    padding: calc(24px + var(--safe-top)) 24px calc(24px + var(--safe-bottom));
+    background: var(--void);
+    pointer-events: auto;
+  }
+}
+.rotate-card { max-width: 300px; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 22px 22px 18px; text-align: center; }
+.rotate-card .silk { margin: 8px 0 0; }
+.rotate-icon { width: 76px; height: 76px; }
+.rotate-phone { fill: none; stroke: var(--ink-soft); stroke-width: 2.5; stroke-dasharray: 4 3; }
+.rotate-phone.landscape { stroke: var(--ink); stroke-dasharray: none; fill: var(--chassis-hi); }
+.rotate-arrow { fill: none; stroke: var(--record); stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.rotate-text { margin: 0; font-weight: 600; line-height: 1.4; }
+
+/* ---------- Touch screens ---------- */
+@media (pointer: coarse) {
+  /* Keyboard-shortcut caps mean nothing on a touch screen. */
+  .key-only { display: none !important; }
+  .transport .cap, .daw-transport .cap, .pause-actions .cap, .menu-actions .cap { display: none; }
+  .chart-hit { cursor: pointer; }
+}
+
+/* ---------- Compact: short landscape screens (phones) ---------- */
+@media (max-height: 520px) {
+  /* HUD corners */
+  .corner-keys { top: calc(8px + var(--safe-top)); left: calc(10px + var(--safe-left)); gap: 6px; }
+  .corner-keys .key { min-width: 40px; height: 40px; }
+  .phone-button { right: calc(10px + var(--safe-right)); bottom: calc(10px + var(--safe-bottom)); min-width: 44px; height: 44px; }
+
+  /* Transport bar: one slim row, centred in the space right of the corner keys. */
+  .transport {
+    top: calc(6px + var(--safe-top));
+    left: calc(var(--safe-left) + 62px);
+    right: calc(var(--safe-right) + 8px);
+    width: max-content;
+    max-width: calc(100% - var(--safe-left) - var(--safe-right) - 70px);
+    margin-inline: auto;
+    transform: none;
+    padding: 4px 12px 6px;
+    gap: 10px;
+    align-items: center;
+  }
+  .transport.chassis.screws::before,
+  .transport.chassis.screws::after { display: none; }
+  .transport .silk { display: none; }
+  .transport .lcd { font-size: 16px; padding: 4px 8px 3px; }
+  .transport .lcd .ghost { inset: 4px 8px 3px; }
+  .transport .lcd.clock,
+  .transport .lcd.cash { min-width: 0; }
+  .transport .lcd-sub { display: none; }
+  .transport .keys { gap: 4px; padding-top: 7px; }
+  .transport .key { min-width: 36px; height: 32px; padding: 0 6px; }
+  .transport .key .led { top: -7px; width: 5px; height: 5px; margin-left: -2.5px; }
+  .levels { gap: 3px; }
+  .meter-label { width: 36px; font-size: 9px; }
+  .meter-leds { padding: 2px 3px; }
+  .meter-leds span { width: 5px; height: 6px; }
+
+  /* Notices sit just under the bar. */
+  .toasts { top: calc(56px + var(--safe-top)); max-width: calc(100% - 200px); }
+  .toast { font-size: var(--text-xs); padding: 4px 10px; white-space: normal; text-align: center; }
+
+  /* Touch hints move to the top-left so the bottom stays free for the prompt and joystick. */
+  .hints.touch {
+    top: calc(56px + var(--safe-top));
+    bottom: auto;
+    left: calc(12px + var(--safe-left));
+    flex-direction: column;
+    gap: 2px;
+    font-size: 11px;
+  }
+  .hints.touch span + span::before { content: none; }
+  .hints:not(.touch) { display: none; }
+
+  /* Prompt and action menu */
+  .prompt { bottom: calc(10px + var(--safe-bottom)); padding: 8px 14px; }
+  .action-menu {
+    bottom: calc(8px + var(--safe-bottom));
+    width: min(360px, 62vw);
+    max-height: calc(var(--app-h) - 70px - var(--safe-top) - var(--safe-bottom));
+    overflow-y: auto;
+    padding: 8px 10px;
+    gap: 4px;
+  }
+  .action { padding: 7px 10px; }
+  .joystick { width: 104px; height: 104px; left: calc(18px + var(--safe-left)); bottom: calc(14px + var(--safe-bottom)); }
+  .joystick-knob { width: 46px; height: 46px; }
+
+  /* The phone becomes a full-height side sheet. */
+  .phone {
+    top: calc(6px + var(--safe-top));
+    bottom: calc(6px + var(--safe-bottom));
+    right: calc(8px + var(--safe-right));
+    width: min(340px, 50vw);
+    height: auto;
+    padding: 6px 6px 4px;
+    border-radius: 20px;
+  }
+  .phone-screen { border-radius: 15px; }
+  .phone-status { padding: 6px 14px 2px; }
+  .phone-bar { padding: 2px 14px 6px; }
+  .phone-body { padding: 10px 12px 12px; }
+  .phone-home { height: 10px; margin-top: 4px; }
+  .phone ~ .phone-button,
+  .phone ~ .prompt { display: none; }
+
+  /* Debug panel */
+  .debug { top: calc(6px + var(--safe-top)); right: calc(8px + var(--safe-right)); width: 250px; max-height: calc(var(--app-h) - 12px - var(--safe-top) - var(--safe-bottom)); gap: 8px; padding-top: 14px; }
+
+  /* Menus: pause, settings, report, study */
+  .backdrop { padding: calc(6px + var(--safe-top)) calc(8px + var(--safe-right)) calc(6px + var(--safe-bottom)) calc(8px + var(--safe-left)); }
+  .menu {
+    max-height: calc(var(--app-h) - 12px - var(--safe-top) - var(--safe-bottom));
+    overflow-y: auto;
+    padding: 14px 16px 12px;
+    gap: 8px;
+  }
+  .menu-title { font-size: 20px; }
+  .pause-lcd { font-size: 30px; padding: 6px 12px 4px; }
+  .pause-lcd .ghost { inset: 6px 12px 4px; }
+  .pause-actions { gap: 8px; }
+  .pause-actions .key.wide,
+  .menu-actions .key.wide { height: 38px; }
+  .set-row { flex-wrap: wrap; gap: 4px 12px; }
+  .set-row .choices { padding-top: 6px; flex-wrap: wrap; }
+  .report-head { flex-wrap: wrap; gap: 10px; }
+  .report-lcd { font-size: 34px; min-width: 76px; }
+  .grade strong { font-size: 24px; }
+  .sleep-lcd { font-size: 26px; }
+
+  /* Full screens: title and character creation */
+  .screen { padding: calc(8px + var(--safe-top)) calc(12px + var(--safe-right)) calc(8px + var(--safe-bottom)) calc(12px + var(--safe-left)); }
+  .title-unit { padding: 14px 18px; }
+  .title-unit .lcd.hero { font-size: 44px; padding: 8px 14px 6px; }
+  .title-unit .lcd.hero .ghost { inset: 8px 14px 6px; }
+  .title-unit .tagline { font-size: 16px; margin: 10px 0 2px; }
+  .title-unit .lede { font-size: var(--text-sm); margin-bottom: 12px; }
+  .title-unit .key.wide { height: 40px; }
+  .cc { padding: 12px 14px; gap: 10px; }
+  .cc-marquee { font-size: 20px; padding: 5px 10px 4px; }
+  .cc-marquee .ghost { inset: 5px 10px 4px; }
+  .cc-body { grid-template-columns: 150px 1fr; gap: 16px; }
+  .cc-stage { width: 150px; height: 168px; }
+  .cc-stage canvas { width: 96px !important; height: 144px !important; }
+  .cc-form { gap: 8px; }
+  .cc-names { gap: 10px; }
+  .lcd-input { font-size: 17px; padding: 5px 8px 4px; }
+  .swatch { width: 26px; height: 26px; }
+  .bg-grid { gap: 8px; }
+  .bg-card { padding: 10px; gap: 6px; }
+  .bg-summary { font-size: var(--text-xs); }
+  .cc-foot .key.wide { height: 40px; }
+
+  /* Beat maker */
+  .daw-backdrop { padding: calc(4px + var(--safe-top)) calc(6px + var(--safe-right)) calc(4px + var(--safe-bottom)) calc(6px + var(--safe-left)); }
+  .daw {
+    width: 100%;
+    max-height: calc(var(--app-h) - 8px - var(--safe-top) - var(--safe-bottom));
+    padding: 8px 12px 10px;
+    gap: 6px;
+  }
+  .daw.chassis.screws::before,
+  .daw.chassis.screws::after { display: none; }
+  .daw-head { align-items: center; }
+  .daw-head .silk { display: none; }
+  .daw-lcd { font-size: 16px; min-width: 0; padding: 5px 8px 3px; }
+  .daw-lcd .ghost { inset: 5px 8px 3px; }
+  .daw-transport { gap: 6px; }
+  .daw-transport .key,
+  .daw-transport .key.wide { height: 34px; padding: 0 12px; }
+  .daw-controls { flex-wrap: nowrap; overflow-x: auto; gap: 12px; padding: 4px 0 2px; scrollbar-width: none; }
+  .daw-controls::-webkit-scrollbar { display: none; }
+  .daw-controls .silk { font-size: 9px; margin: 0 0 2px; }
+  .daw-controls .choices { flex-wrap: nowrap; padding-top: 6px; gap: 5px; }
+  .daw-controls .key.wide { height: 30px; padding: 0 10px; font-size: var(--text-xs); white-space: nowrap; }
+  .daw-stepper .key { min-width: 30px; height: 30px; }
+  .daw-lcd-sm { font-size: 15px; min-width: 48px; }
+  .daw-scale { min-width: 110px; height: 30px; }
+  .daw-hint { display: none; }
+  .daw-pages { padding-top: 6px; gap: 6px; }
+  .daw-pages .key.wide { height: 32px; font-size: var(--text-xs); }
+  .daw-grid-wrap { flex-direction: column; gap: 8px; }
+  .daw-grid { width: 100%; grid-template-columns: 52px repeat(var(--steps), minmax(0, 1fr)); gap: 4px 3px; padding: 8px; }
+  .lane-name { font-size: 9px; }
+  .pad { height: 28px; }
+  .pad.glide { height: 20px; }
+  .daw-side { width: 100%; flex-direction: row; flex-wrap: wrap; align-items: flex-end; gap: 12px; }
+  .daw-side .daw-tip { display: none; }
+  .daw-side .fader { width: 160px; }
+  .choices.vertical { flex-direction: row; padding-top: 6px; gap: 6px; }
+  .daw-foot { padding-top: 6px; gap: 8px; }
+  .daw-foot .key.wide { height: 36px; font-size: var(--text-xs); }
+  .daw-work { font-size: var(--text-xs); }
+}

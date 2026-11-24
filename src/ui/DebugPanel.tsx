@@ -42,7 +42,7 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
 
       <section>
         <p class="silk">Money</p>
-        <div class="row">
+        <div class="debug-row">
           <button class="key wide" onClick={() => addCash(100)}>+$100</button>
           <button class="key wide" onClick={() => addCash(1_000)}>+$1,000</button>
           <button class="key wide" onClick={() => addCash(10_000)}>+$10,000</button>
@@ -51,7 +51,7 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
 
       <section>
         <p class="silk">Time</p>
-        <div class="row">
+        <div class="debug-row">
           <button class="key wide" onClick={() => sim.dispatch('debugSkipMinutes', { minutes: 60 })}>Skip 1 hour</button>
           <button class="key wide" onClick={skipToMorning}>Skip to 8:00</button>
           <button class="key wide" onClick={() => sim.dispatch('debugSkipMinutes', { minutes: 7 * MINUTES_PER_DAY })}>Skip 1 week</button>
@@ -60,7 +60,7 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
 
       <section>
         <p class="silk">Needs</p>
-        <div class="row">
+        <div class="debug-row">
           <button class="key wide" onClick={() => sim.dispatch('debugSetNeeds', { energy: 15 })}>Tired</button>
           <button class="key wide" onClick={() => sim.dispatch('debugSetNeeds', { food: 10 })}>Hungry</button>
           <button class="key wide" onClick={() => sim.dispatch('debugSetNeeds', { energy: 100, food: 100, mood: 100 })}>Refill</button>
@@ -69,7 +69,7 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
 
       <section>
         <p class="silk">Skills</p>
-        <div class="row">
+        <div class="debug-row">
           <button class="key wide" onClick={() => sim.dispatch('debugBoostSkills', { amount: 10 })}>All skills +10</button>
           <button class="key wide" onClick={() => sim.dispatch('debugBoostSkills', { amount: -10 })}>All skills −10</button>
         </div>
@@ -77,7 +77,7 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
 
       <section>
         <p class="silk">BeatHub</p>
-        <div class="row">
+        <div class="debug-row">
           <button class="key wide" onClick={() => {
             const r = sim.dispatch('debugSpawnOffer', {});
             if (!r.ok) bridge.toast(r.error, 'bad');
@@ -88,7 +88,7 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
 
       <section>
         <p class="silk">Save</p>
-        <div class="row">
+        <div class="debug-row">
           <button
             class="key wide"
             onClick={async () => {

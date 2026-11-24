@@ -225,9 +225,9 @@ function OfferCard({ sim, offer, run }: { sim: Simulation; offer: Offer; run: Ru
       {offer.status === 'open' && !countering && (
         <div class="offer-actions">
           <button class="order" onClick={() => run(sim.dispatch('acceptOffer', { offerId: offer.id }))}>Accept</button>
-          <button class="ghost" disabled={offer.counter !== null} title={offer.counter !== null ? 'You can only counter once.' : undefined}
+          <button class="ghost-button" disabled={offer.counter !== null} title={offer.counter !== null ? 'You can only counter once.' : undefined}
             onClick={() => setCountering(true)}>Counter</button>
-          <button class="ghost" onClick={() => run(sim.dispatch('declineOffer', { offerId: offer.id }))}>Decline</button>
+          <button class="ghost-button" onClick={() => run(sim.dispatch('declineOffer', { offerId: offer.id }))}>Decline</button>
         </div>
       )}
       {countering && (
@@ -243,7 +243,7 @@ function OfferCard({ sim, offer, run }: { sim: Simulation; offer: Offer; run: Ru
                 </button>
               );
             })}
-            <button class="ghost" onClick={() => setCountering(false)}>Cancel</button>
+            <button class="ghost-button" onClick={() => setCountering(false)}>Cancel</button>
           </div>
         </div>
       )}
@@ -332,7 +332,7 @@ function AccountTab({ sim, run }: { sim: Simulation; run: Run }) {
             </p>
             {store.proCancelled
               ? <button class="order" onClick={() => run(sim.dispatch('resumePro', {}))}>Keep Pro</button>
-              : <button class="ghost" onClick={() => run(sim.dispatch('cancelPro', {}))}>Cancel Pro</button>}
+              : <button class="ghost-button" onClick={() => run(sim.dispatch('cancelPro', {}))}>Cancel Pro</button>}
           </>
         )}
       </section>

@@ -19,7 +19,9 @@
 
 ## Checks before merging
 `npm test`, `npm run typecheck`, `npm run lint`, `npm run build`, and play the change
-in a browser (Playwright screenshots) when it touches the game or UI.
+in a browser (Playwright screenshots) when it touches the game or UI: on desktop **and** on an
+emulated iPhone in landscape (`devices['iPhone 15 landscape']`, 734×343, the tightest case).
+Avoid generic class names (`.actions`, `.ghost`, `.row`...): two have collided already.
 
 ## Project rules
 - Read `docs/GAME_DESIGN.md`, `docs/ARCHITECTURE.md` and `docs/ROADMAP.md` first.

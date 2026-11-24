@@ -3,6 +3,23 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## Unreleased
+
+- iPhone support (landscape):
+  - Tap the floor to walk there; tap furniture to walk over and use it. Also works with a
+    mouse on desktop. Tap the "Use ..." prompt to open its menu.
+  - Optional on-screen joystick (Settings → Controls).
+  - Every screen fits a landscape phone: a slim HUD, the phone as a side sheet, a compact
+    beat maker with bigger pads, and menus that scroll. Clear of the notch and home bar.
+  - The room is drawn at the screen's real pixel density: crisp pixel art, whole room visible.
+  - Turning a phone upright shows a "turn your phone sideways" card and pauses the game.
+  - Developer tools setting shows a DBG button for the debug panel.
+- Installable: Add to Home Screen gives a full-screen app with its own icon that plays
+  offline.
+- Settings → Save data: export your save as a file, or import one from the title screen.
+- Fixed: the title screen's buttons overlapping the logo (since v1-beta.4) and a faint
+  box inside every LCD readout (since v1-beta.6), both caused by clashing style names.
+
 ## v1-beta.6
 
 BeatHub selling (Milestone 1, update 6). Milestone 1, Bedroom Producer, is complete.

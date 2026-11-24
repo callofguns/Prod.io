@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'preact/hooks';
+import { useEffect, useLayoutEffect, useRef, useState } from 'preact/hooks';
 import type { Session } from '../app/Session';
 import { formatMoney } from '../sim/core/money';
 import { SPEEDS, formatClock, pad2, toCalendar, type Speed } from '../sim/core/time';
@@ -16,10 +16,12 @@ import { BeatMaker } from './daw/BeatMaker';
 import { LearnPanel } from './LearnPanel';
 import { BeatReport } from './BeatReport';
 import { Meter } from './components/Meter';
+import { Joystick } from './Joystick';
+import { PORTRAIT_PHONE, isTouch, onMediaChange } from '../app/device';
 
 const SPEED_KEYS: Record<string, Speed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
 
-function TransportBar({ session }: { session: Session }) {
+function TransportBar({ session, innerRef }: { session: Session; innerRef: { current: HTMLDivElement | null } }) {
   const { sim } = session;
   useSimEvents(sim, ['minute', 'speedChanged', 'cashChanged', 'needsChanged']);
   const needs = sim.state.needs;
@@ -29,7 +31,7 @@ function TransportBar({ session }: { session: Session }) {
   const date = `DAY ${t.day} · ${t.month.toUpperCase()} ${pad2(t.date)} ${t.year}`;
 
   return (
-    <div class="transport chassis screws interactive">
+    <div class="transport chassis screws interactive" ref={innerRef}>
       <div class="group">
         <p class="silk">Time</p>
         <Lcd text={clock} label="Time" class={`clock ${paused ? 'paused' : ''}`}>
@@ -80,15 +82,23 @@ function TransportBar({ session }: { session: Session }) {
   );
 }
 
+/** What you can use right here. Press E, or tap it. */
 function Prompt({ session }: { session: Session }) {
   useBridge(session.bridge);
-  const prompt = session.bridge.prompt;
-  if (!prompt || session.bridge.actionsFor) return null;
+  const { bridge, sim } = session;
+  const prompt = bridge.prompt;
+  if (!prompt || bridge.actionsFor) return null;
   return (
-    <div class="prompt chassis" key={prompt.id}>
-      <span class="cap">E</span>
+    <button
+      class="prompt chassis interactive"
+      key={prompt.id}
+      onClick={() => {
+        if (!sim.state.clock.paused && !sim.activity.isBusy()) bridge.openActions(prompt.id);
+      }}
+    >
+      <span class="cap key-only">E</span>
       {prompt.label}
-    </div>
+    </button>
   );
 }
 
@@ -103,9 +113,17 @@ function Toasts({ session }: { session: Session }) {
   );
 }
 
-function Hints() {
+function Hints({ innerRef, joystick }: { innerRef: { current: HTMLDivElement | null }; joystick: boolean }) {
+  if (isTouch()) {
+    return (
+      <div class="hints touch" ref={innerRef} aria-hidden="true">
+        <span>{joystick ? 'Drag the stick to walk' : 'Tap the floor to walk'}</span>
+        <span>Tap furniture to use it</span>
+      </div>
+    );
+  }
   return (
-    <div class="hints" aria-hidden="true">
+    <div class="hints" ref={innerRef} aria-hidden="true">
       <span><span class="cap">WASD</span> Walk</span>
       <span><span class="cap">E</span> Interact</span>
       <span><span class="cap">Space</span> Pause</span>
@@ -124,7 +142,10 @@ const SELF_KEYED: Menu[] = ['daw', 'learn', 'report'];
 export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitle: () => void }) {
   const [debugOpen, setDebugOpen] = useState(false);
   const [menu, setMenuState] = useState<Menu>('none');
-  const [showHints, setShowHints] = useState(settings.get().showHints);
+  const [prefs, setPrefs] = useState(settings.get());
+  const showHints = prefs.showHints;
+  const transportRef = useRef<HTMLDivElement | null>(null);
+  const hintsRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useRef<Menu>('none');
   const [phoneApp, setPhoneApp] = useState<AppId | null>(null);
   const phoneRef = useRef<AppId | null>(null);
@@ -155,7 +176,32 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
     onQuitToTitle();
   };
 
-  useEffect(() => settings.subscribe((s) => setShowHints(s.showHints)), []);
+  useEffect(() => settings.subscribe(setPrefs), []);
+
+  // Tell the world camera how much of the screen the HUD covers.
+  useLayoutEffect(() => {
+    const measure = () => {
+      const top = transportRef.current ? transportRef.current.getBoundingClientRect().bottom + 6 : 0;
+      const hints = hintsRef.current?.getBoundingClientRect();
+      // Hints only reserve space when they sit along the bottom (on phones they move to the top-left).
+      const bottom = hints && hints.height > 0 && hints.top > window.innerHeight / 2 ? Math.max(0, window.innerHeight - hints.top + 4) : 0;
+      session.bridge.setHudInsets(Math.round(top), Math.round(bottom));
+    };
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (transportRef.current) ro.observe(transportRef.current);
+    if (hintsRef.current) ro.observe(hintsRef.current);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [session, showHints]);
+
+  // Turning a phone upright shows the rotate notice; pause the game behind it.
+  useEffect(() => onMediaChange(PORTRAIT_PHONE, (portrait) => {
+    if (portrait && menuRef.current === 'none') setMenu('pause');
+  }), [session]);
   const [reportBeatId, setReportBeatId] = useState<number | null>(null);
   useEffect(() => {
     const { events } = session.sim;
@@ -246,10 +292,17 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
 
   return (
     <>
-      <TransportBar session={session} />
-      <button class="key menu-button interactive" aria-label="Pause menu (Esc)" title="Pause menu (Esc)" onClick={() => setMenu('pause')}>
-        <MenuGlyph />
-      </button>
+      <TransportBar session={session} innerRef={transportRef} />
+      <div class="corner-keys interactive">
+        <button class="key menu-button" aria-label="Pause menu (Esc)" title="Pause menu (Esc)" onClick={() => setMenu('pause')}>
+          <MenuGlyph />
+        </button>
+        {prefs.devTools && (
+          <button class="key debug-button" aria-pressed={debugOpen} aria-label="Debug panel" title="Debug panel (`)" onClick={() => setDebugOpen((o) => !o)}>
+            DBG
+          </button>
+        )}
+      </div>
       <button class="key phone-button interactive" aria-label={`Phone (P)${unread ? `, ${unread} unread` : ''}`}
         title="Phone (P)" onClick={() => setPhone(phoneApp ? null : 'home')}>
         <PhoneGlyph />
@@ -263,7 +316,8 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       {menu === 'none' && <Prompt session={session} />}
       {menu === 'none' && <ActionMenu session={session} />}
       <SleepOverlay session={session} />
-      {showHints && <Hints />}
+      {showHints && <Hints innerRef={hintsRef} joystick={prefs.joystick} />}
+      {prefs.joystick && menu === 'none' && !phoneApp && <Joystick bridge={session.bridge} />}
       {debugOpen && menu === 'none' && <DebugPanel session={session} onQuitToTitle={onQuitToTitle} onClose={() => setDebugOpen(false)} />}
       {menu === 'daw' && (
         <div class="backdrop daw-backdrop interactive">
@@ -289,7 +343,9 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
           {menu === 'pause' && (
             <PauseMenu session={session} onResume={() => setMenu('none')} onSettings={() => setMenu('settings')} onQuit={quit} />
           )}
-          {menu === 'settings' && <SettingsPanel onClose={() => setMenu('pause')} />}
+          {menu === 'settings' && (
+            <SettingsPanel onClose={() => setMenu('pause')} saveData={{ exportState: async () => session.sim.state }} />
+          )}
         </div>
       )}
     </>

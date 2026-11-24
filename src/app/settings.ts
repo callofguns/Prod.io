@@ -12,6 +12,10 @@ export interface Settings {
   motion: MotionSetting;
   /** Master volume for all game audio, 0-1. */
   volume: number;
+  /** Show an on-screen joystick for walking (tapping to walk always works too). */
+  joystick: boolean;
+  /** Shows a button for the debug panel (the backtick key does this on a keyboard). */
+  devTools: boolean;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -20,6 +24,8 @@ export const DEFAULT_SETTINGS: Settings = {
   pauseOnBlur: true,
   motion: 'system',
   volume: 0.8,
+  joystick: false,
+  devTools: false,
 };
 
 const KEY = 'prod-io:settings';

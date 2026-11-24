@@ -16,6 +16,14 @@ npm run dev        # open the printed localhost URL
 ```
 
 Controls: `WASD`/arrows walk · `E` interact · `Space` pause · `1` `2` `3` speed · `` ` `` debug panel.
+You can also click (or tap) the floor to walk, and click furniture to use it.
+
+## Play on iPhone
+
+Open the live build in Safari and turn the phone sideways (it plays in landscape).
+To install it, tap **Share**, then **Add to Home Screen**: it opens full screen, works
+offline, and keeps your save safer. Safari and the home-screen app keep separate saves;
+use **Settings → Save data** to export from one and import into the other.
 
 Other scripts: `npm test`, `npm run lint`, `npm run typecheck`, `npm run build`.
 

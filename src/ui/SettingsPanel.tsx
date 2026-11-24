@@ -1,4 +1,7 @@
-import { useEffect, useState } from 'preact/hooks';
+import { useEffect, useRef, useState } from 'preact/hooks';
+import type { GameState } from '../sim/core/state';
+import { describeSave, fromSaveFile, saveFileName, toSaveFile } from '../save/transfer';
+import { shareOrDownload } from './saveShare';
 import { settings, type Settings } from '../app/settings';
 import { APP_VERSION } from '../version';
 
@@ -29,8 +32,80 @@ function Option<T extends string | number | boolean>({ label, hint, options, val
   );
 }
 
+export interface SaveData {
+  /** The current save, or null if there isn't one. */
+  exportState: () => Promise<GameState | null>;
+  /** Only offered on the title screen, so a running game can't overwrite it. */
+  importState?: (state: GameState) => Promise<void>;
+}
+
+function SaveDataSection({ data }: { data: SaveData }) {
+  const input = useRef<HTMLInputElement>(null);
+  const [message, setMessage] = useState<string | null>(null);
+  const [pending, setPending] = useState<GameState | null>(null);
+  const [current, setCurrent] = useState<GameState | null>(null);
+
+  const exportSave = async () => {
+    const state = await data.exportState();
+    if (!state) return setMessage('There is no save to export yet.');
+    const result = await shareOrDownload(saveFileName(state), toSaveFile(state));
+    setMessage(result === 'cancelled' ? null : `Exported ${describeSave(state)}.`);
+  };
+
+  const pickFile = async (file: File | undefined) => {
+    if (!file) return;
+    try {
+      const state = fromSaveFile(await file.text());
+      setCurrent(await data.exportState());
+      setPending(state);
+      setMessage(null);
+    } catch (err) {
+      setMessage(err instanceof Error ? err.message : String(err));
+    } finally {
+      if (input.current) input.current.value = '';
+    }
+  };
+
+  return (
+    <>
+      <p class="silk menu-group">Save data</p>
+      <p class="menu-note">
+        Back up your game, or move it between Safari and the home-screen app (an iPhone keeps their saves separate).
+      </p>
+      {pending ? (
+        <div class="save-confirm">
+          <p>
+            Import <strong>{describeSave(pending)}</strong>?{current ? <> This replaces your current save ({describeSave(current)}).</> : null}
+          </p>
+          <div class="menu-actions">
+            <button class="key wide light" onClick={() => setPending(null)}>Cancel</button>
+            <button class="key wide danger" onClick={async () => {
+              await data.importState!(pending);
+              setPending(null);
+              setMessage(`Imported ${describeSave(pending)}. Press Continue to play it.`);
+            }}>Replace save</button>
+          </div>
+        </div>
+      ) : (
+        <div class="save-buttons">
+          <button class="key wide" onClick={exportSave}>Export save</button>
+          {data.importState ? (
+            <>
+              <button class="key wide light" onClick={() => input.current?.click()}>Import save</button>
+              <input ref={input} type="file" accept="application/json,.json" hidden onChange={(e) => pickFile(e.currentTarget.files?.[0])} />
+            </>
+          ) : (
+            <span class="menu-note">To import a save, open Settings from the title screen.</span>
+          )}
+        </div>
+      )}
+      {message && <p class="save-message" role="status">{message}</p>}
+    </>
+  );
+}
+
 /** Per-browser preferences, reachable from the title screen and the pause menu. */
-export function SettingsPanel({ onClose }: { onClose: () => void }) {
+export function SettingsPanel({ onClose, saveData }: { onClose: () => void; saveData?: SaveData }) {
   const [s, setS] = useState<Settings>(settings.get());
   useEffect(() => settings.subscribe(setS), []);
   const set = (patch: Partial<Settings>) => settings.update(patch);
@@ -44,7 +119,7 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
       <Option label="World zoom" hint="Auto picks the largest size that fits your window."
         options={[{ value: 'auto', name: 'Auto' }, { value: 2, name: '2×' }, { value: 3, name: '3×' }, { value: 4, name: '4×' }]}
         value={s.zoom} onChange={(zoom) => set({ zoom })} />
-      <Option label="Control hints" hint="The key guide in the bottom-left corner."
+      <Option label="Control hints" hint="Tips on how to walk and use things."
         options={[{ value: true, name: 'Show' }, { value: false, name: 'Hide' }]}
         value={s.showHints} onChange={(showHints) => set({ showHints })} />
       <Option label="Reduce motion"
@@ -56,10 +131,20 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         options={[{ value: 0, name: 'Off' }, { value: 0.25, name: '25%' }, { value: 0.5, name: '50%' }, { value: 0.8, name: '80%' }, { value: 1, name: '100%' }]}
         value={s.volume} onChange={(volume) => set({ volume })} />
 
+      <p class="silk menu-group">Controls</p>
+      <Option label="On-screen joystick" hint="For touch screens. Tapping where to walk always works too."
+        options={[{ value: false, name: 'Off' }, { value: true, name: 'On' }]}
+        value={s.joystick} onChange={(joystick) => set({ joystick })} />
+      <Option label="Developer tools" hint="Shows a DBG button for the debug panel (no keyboard needed)."
+        options={[{ value: false, name: 'Off' }, { value: true, name: 'On' }]}
+        value={s.devTools} onChange={(devTools) => set({ devTools })} />
+
       <p class="silk menu-group">Gameplay</p>
       <Option label="Pause when you leave the tab" hint="Opens the pause menu if you switch windows."
         options={[{ value: true, name: 'On' }, { value: false, name: 'Off' }]}
         value={s.pauseOnBlur} onChange={(pauseOnBlur) => set({ pauseOnBlur })} />
+
+      {saveData && <SaveDataSection data={saveData} />}
 
       <p class="menu-note">Settings are saved in this browser.</p>
 
