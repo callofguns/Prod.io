@@ -3,82 +3,57 @@ import type { Simulation } from '../../sim/Simulation';
 import type { Facing } from '../../sim/core/state';
 import { toCalendar } from '../../sim/core/time';
 import type { ViewBridge } from '../../app/ViewBridge';
-import { registerApartmentArt, ROOM_H, ROOM_W, TILE, DOOR_X, DOOR_W } from '../art/apartmentArt';
+import { registerApartmentArt } from '../art/apartmentArt';
 import { registerCharacter } from '../art/characterArt';
+import { CAR_KEYS } from '../art/cityArt';
 import { darknessAt } from '../daylight';
 import { settings } from '../../app/settings';
 import { buildNavGrid, cellPoint, findPath, isWalkable, type NavGrid, type Point, type Rect } from '../pathfinding';
-
-interface Interactable {
-  id: string;
-  label: string;
-  /** Where the player's feet must be to use it. */
-  zone: Rect;
-  /** What you can tap on screen to walk over and use it (sprite bounds). */
-  tapAreas: Rect[];
-}
+import { LAYOUTS, type AreaLayout, type Interactable } from '../areas/layouts';
+import { CLOTHING_COLORS, HAIR_COLORS, HAIR_STYLES, SKIN_TONES, TOP_STYLES, type LookChoice } from '../../content/looks';
+import type { AreaId } from '../../content/city';
 
 export interface SceneDeps {
   sim: Simulation;
   bridge: ViewBridge;
 }
 
-const AREA = 'apartment';
 const WALK_SPEED = 72; // world px per second
 const FEET_W = 10;
 const FEET_H = 5;
-const START = { x: 152, y: 124 };
-/** Where the player stands after getting out of bed. */
-const BED_SIDE = { x: 34, y: 96 };
-const BOTTOM = ROOM_H - TILE;
 /** A press that moves less than this (CSS px) and lasts less than TAP_MS counts as a tap. */
 const TAP_SLOP = 14;
 const TAP_MS = 600;
 /** Joystick dead zone. */
 const STICK_DEAD = 0.2;
-
-/** Solid parts of the room, in world pixels. Furniture uses its footprint, not its full sprite. */
-const COLLIDERS: Rect[] = [
-  { x: 0, y: 0, w: ROOM_W, h: 2 * TILE + 2 }, // back wall
-  { x: 0, y: 0, w: TILE, h: ROOM_H }, // left wall
-  { x: ROOM_W - TILE, y: 0, w: TILE, h: ROOM_H }, // right wall
-  { x: 0, y: BOTTOM, w: DOOR_X, h: TILE }, // bottom wall, left of door
-  { x: DOOR_X + DOOR_W, y: BOTTOM, w: ROOM_W - DOOR_X - DOOR_W, h: TILE }, // right of door
-  { x: DOOR_X, y: ROOM_H - 4, w: DOOR_W, h: 4 }, // closed door
-  { x: 16, y: 34, w: 32, h: 44 }, // bed
-  { x: 50, y: 40, w: 16, h: 10 }, // nightstand
-  { x: 112, y: 38, w: 64, h: 16 }, // desk
-  { x: 208, y: 34, w: 48, h: 20 }, // counter
-  { x: 256, y: 34, w: 16, h: 20 }, // fridge
-  { x: 138, y: 64, w: 12, h: 8 }, // desk chair
-  { x: 24, y: 146, w: 48, h: 18 }, // couch
-  { x: 254, y: 160, w: 10, h: 6 }, // plant
-];
-
-const grow = (r: Rect, by: number): Rect => ({ x: r.x - by, y: r.y - by, w: r.w + by * 2, h: r.h + by * 2 });
-
-const INTERACTABLES: Interactable[] = [
-  { id: 'bed', label: 'Sleep', zone: grow({ x: 16, y: 34, w: 32, h: 44 }, 10), tapAreas: [{ x: 16, y: 30, w: 32, h: 48 }] },
-  {
-    id: 'computer', label: 'Use computer', zone: grow({ x: 112, y: 38, w: 64, h: 16 }, 12),
-    tapAreas: [{ x: 112, y: 16, w: 64, h: 40 }, { x: 136, y: 52, w: 16, h: 20 }],
-  },
-  { id: 'stove', label: 'Cook', zone: grow({ x: 208, y: 34, w: 40, h: 20 }, 10), tapAreas: [{ x: 208, y: 20, w: 48, h: 34 }] },
-  { id: 'fridge', label: 'Open fridge', zone: grow({ x: 256, y: 34, w: 16, h: 20 }, 10), tapAreas: [{ x: 256, y: 8, w: 16, h: 46 }] },
-  {
-    id: 'door', label: 'Leave apartment', zone: { x: DOOR_X - 4, y: BOTTOM - 14, w: DOOR_W + 8, h: 20 },
-    tapAreas: [{ x: DOOR_X, y: BOTTOM - 10, w: DOOR_W, h: TILE + 10 }],
-  },
-];
+/** The camera shows at most this much of a big area (world px), like the apartment. */
+const VIEW_W = 288;
+const VIEW_H = 192;
 
 const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
 const contains = (r: Rect, x: number, y: number) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+const reducedMotion = () => document.documentElement.dataset.motion === 'reduce';
 
-export class ApartmentScene extends Phaser.Scene {
+interface Walker {
+  sprite: Phaser.GameObjects.Sprite;
+  shadow: Phaser.GameObjects.Image;
+  speed: number;
+  dir: 1 | -1;
+  clock: number;
+}
+
+/**
+ * The walkable world. One scene class builds whichever area the simulation
+ * says the player is in (apartment, a street, a shop) from its layout, and
+ * restarts itself when the player moves to another area.
+ */
+export class WorldScene extends Phaser.Scene {
   private deps!: SceneDeps;
+  private areaId: AreaId = 'apartment';
+  private layout!: AreaLayout;
   private player!: Phaser.GameObjects.Sprite;
   private shadow!: Phaser.GameObjects.Image;
-  private sky!: Phaser.GameObjects.Rectangle;
+  private sky: Phaser.GameObjects.Rectangle | null = null;
   private night!: Phaser.GameObjects.Rectangle;
   private glows: Phaser.GameObjects.Image[] = [];
   private keys!: Record<'up' | 'down' | 'left' | 'right' | 'w' | 'a' | 's' | 'd' | 'e', Phaser.Input.Keyboard.Key>;
@@ -91,52 +66,70 @@ export class ApartmentScene extends Phaser.Scene {
   private path: Point[] | null = null;
   private pathTarget: Interactable | null = null;
   private pressAt: { x: number; y: number; t: number } | null = null;
+  private walkers: Walker[] = [];
+  private carClock = 0;
+  private leaving = false;
 
   constructor() {
-    super('apartment');
+    super('world');
   }
 
   init(deps: SceneDeps): void {
     this.deps = deps;
+    this.areaId = deps.sim.city.area();
+    this.layout = LAYOUTS[this.areaId];
+    this.path = null;
+    this.pathTarget = null;
+    this.nearby = null;
+    this.walkers = [];
+    this.glows = [];
+    this.sky = null;
+    this.leaving = false;
+    this.carClock = 0;
   }
 
   create(): void {
-    registerApartmentArt(this);
-    registerCharacter(this, 'player', this.deps.sim.state.player.look);
+    const { sim, bridge } = this.deps;
+    const L = this.layout;
+    registerApartmentArt(this); // shared bits: glow and shadow
+    L.register(this);
+    registerCharacter(this, 'player', sim.state.player.look);
 
-    // Room, then the sky seen through the window, then the window frame.
-    this.add.image(0, 0, 'room-bg').setOrigin(0, 0).setDepth(-3);
-    this.sky = this.add.rectangle(62, 7, 32, 16, 0x9fd3f0).setOrigin(0, 0).setDepth(-2);
-    this.add.image(60, 5, 'window-frame').setOrigin(0, 0).setDepth(-1);
+    this.add.image(0, 0, L.background).setOrigin(0, 0).setDepth(-3);
+    if (L.lighting === 'home') {
+      // The sky seen through the apartment window, then the window frame.
+      this.sky = this.add.rectangle(62, 7, 32, 16, 0x9fd3f0).setOrigin(0, 0).setDepth(-2);
+      this.add.image(60, 5, 'window-frame').setOrigin(0, 0).setDepth(-1);
+    }
+    for (const prop of L.props) {
+      const img = this.add.image(prop.x, prop.y, prop.key).setOrigin(0, 0).setFlipX(!!prop.flipX);
+      img.setDepth(prop.depth ?? prop.y + img.height);
+    }
+    for (const npc of L.npcs) {
+      registerCharacter(this, npc.key, npc.look);
+      this.add.image(npc.x, npc.y, 'shadow').setOrigin(0.5, 0.6).setDepth(npc.y - 0.5);
+      this.add.sprite(npc.x, npc.y, npc.key, `${npc.facing === 'left' || npc.facing === 'right' ? 'side' : npc.facing}-0`).setOrigin(0.5, 1).setDepth(npc.y);
+    }
+    if (L.street) this.spawnWalkers(L.street.walkY);
 
-    const prop = (key: string, x: number, y: number) => {
-      const img = this.add.image(x, y, key).setOrigin(0, 0);
-      img.setDepth(y + img.height);
-      return img;
-    };
-    prop('bed', 16, 30);
-    prop('nightstand', 50, 22);
-    prop('desk', 112, 16);
-    prop('chair', 136, 52).setDepth(62);
-    prop('counter', 208, 20);
-    prop('fridge', 256, 8);
-    prop('couch', 24, 140);
-    prop('plant', 252, 142);
+    // Night overlay and light sources.
+    this.night = this.add.rectangle(0, 0, L.width, L.height, 0x141a3a).setOrigin(0, 0).setDepth(10_000).setAlpha(0);
+    this.glows = L.lights.map((l) => {
+      const g = this.add.image(l.x, l.y, 'glow').setScale(l.scale);
+      if (l.tint) g.setTint(l.tint);
+      return g.setDepth(10_001).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0);
+    });
 
-    // Night overlay and light sources (lamp and monitor).
-    this.night = this.add.rectangle(0, 0, ROOM_W, ROOM_H, 0x141a3a).setOrigin(0, 0).setDepth(10_000).setAlpha(0);
-    this.glows = [
-      this.add.image(58, 28, 'glow').setScale(1.4),
-      this.add.image(144, 26, 'glow').setScale(1.1).setTint(0x88e0ff),
-    ];
-    this.glows.forEach((g) => g.setDepth(10_001).setBlendMode(Phaser.BlendModes.ADD).setAlpha(0));
-
-    const loc = this.deps.sim.state.player.location;
-    const start = loc.area === AREA && loc.x >= 0 ? loc : { ...START, facing: 'down' as Facing };
-    this.facing = start.facing;
-    this.shadow = this.add.image(start.x, start.y, 'shadow').setOrigin(0.5, 0.6);
-    this.player = this.add.sprite(start.x, start.y, 'player', this.frameFor(0)).setOrigin(0.5, 1);
+    const loc = sim.state.player.location;
+    const spawn = loc.area === this.areaId && loc.x >= 0
+      ? loc
+      : L.spawns[loc.spawn ?? ''] ?? L.spawns[L.defaultSpawn]!;
+    this.facing = spawn.facing;
+    this.shadow = this.add.image(spawn.x, spawn.y, 'shadow').setOrigin(0.5, 0.6);
+    this.player = this.add.sprite(spawn.x, spawn.y, 'player', this.frameFor(0)).setOrigin(0.5, 1);
     this.player.setFlipX(this.facing === 'left');
+    this.setWalking(false, 0);
+    this.reportLocation();
 
     const kb = this.input.keyboard;
     if (!kb) throw new Error('Keyboard input is not available');
@@ -145,12 +138,11 @@ export class ApartmentScene extends Phaser.Scene {
       up: K.UP, down: K.DOWN, left: K.LEFT, right: K.RIGHT, w: K.W, a: K.A, s: K.S, d: K.D, e: K.E,
     }, false) as typeof this.keys;
     this.keys.e.on('down', () => {
-      const { sim } = this.deps;
-      if (this.nearby && !sim.state.clock.paused && !sim.activity.isBusy()) this.deps.bridge.onInteract(this.nearby.id);
+      if (this.nearby && !sim.state.clock.paused && !sim.activity.isBusy()) bridge.onInteract(this.nearby.id);
     });
 
-    // Tap (or click) the floor to walk there; tap furniture to walk over and use it.
-    this.nav = buildNavGrid(ROOM_W, ROOM_H, COLLIDERS, { w: FEET_W, h: FEET_H });
+    // Tap (or click) the ground to walk there; tap things to walk over and use them.
+    this.nav = buildNavGrid(L.width, L.height, L.colliders, { w: FEET_W, h: FEET_H });
     this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
       this.pressAt = { x: p.x, y: p.y, t: p.downTime };
     });
@@ -161,38 +153,49 @@ export class ApartmentScene extends Phaser.Scene {
       if (!press || Math.hypot(p.x - press.x, p.y - press.y) > slop || p.upTime - press.t > TAP_MS) return;
       this.handleTap(p.x, p.y);
     });
-    // After sleeping in bed, get up beside it.
-    const offWake = this.deps.sim.events.on('activityChanged', ({ woke }) => {
-      if (!woke?.inBed) return;
-      this.player.setPosition(BED_SIDE.x, BED_SIDE.y);
-      this.facing = 'down';
-      this.reportLocation();
-    });
-    this.events.once('shutdown', offWake);
-    this.events.once('destroy', offWake);
 
-    this.cameras.main.setBackgroundColor('#121018');
+    const offs = [
+      // After sleeping in bed, get up beside it.
+      sim.events.on('activityChanged', ({ woke }) => {
+        if (!woke?.inBed || !L.spawns.bed) return;
+        this.player.setPosition(L.spawns.bed.x, L.spawns.bed.y);
+        this.facing = 'down';
+        this.reportLocation();
+      }),
+      // Moving to another area rebuilds the scene there.
+      sim.events.on('areaChanged', () => {
+        if (this.leaving) return;
+        this.leaving = true;
+        bridge.openActions(null);
+        bridge.setPrompt(null);
+        this.time.delayedCall(0, () => this.scene.restart(this.deps));
+      }),
+      settings.subscribe(() => this.fitCamera()),
+      bridge.onLayout(() => this.fitCamera()),
+    ];
     this.scale.on('resize', this.fitCamera, this);
-    this.fitCamera();
-    this.updateLighting();
-    const offSettings = settings.subscribe(() => this.fitCamera());
-    const offLayout = this.deps.bridge.onLayout(() => this.fitCamera());
     const cleanup = () => {
       this.scale.off('resize', this.fitCamera, this);
-      offSettings();
-      offLayout();
+      offs.forEach((off) => off());
     };
     this.events.once('shutdown', cleanup);
     this.events.once('destroy', cleanup);
+
+    this.cameras.main.setBackgroundColor('#121018');
+    this.fitCamera();
+    this.updateLighting();
+    if (!reducedMotion()) this.cameras.main.fadeIn(220, 18, 16, 24);
   }
 
   override update(_time: number, deltaMs: number): void {
     const { sim } = this.deps;
     sim.update(deltaMs);
+    if (this.leaving) return;
     this.updateLighting();
-    const asleep = sim.state.activity?.kind === 'sleeping';
-    this.player.setVisible(!asleep);
-    this.shadow.setVisible(!asleep);
+    this.updateStreetLife(deltaMs);
+    const away = sim.state.activity?.kind === 'sleeping' || sim.state.activity?.kind === 'traveling';
+    this.player.setVisible(!away);
+    this.shadow.setVisible(!away);
     if (sim.state.clock.paused || sim.activity.isBusy()) {
       this.setWalking(false, deltaMs);
       if (sim.activity.isBusy()) {
@@ -209,6 +212,82 @@ export class ApartmentScene extends Phaser.Scene {
       this.reportLocation();
     }
   }
+
+  // ---------- Street life (view only, not simulated) ----------
+
+  private randomLook(): LookChoice {
+    const any = <T>(list: readonly T[]) => list[Math.floor(Math.random() * list.length)]!;
+    return {
+      skin: any(SKIN_TONES).id,
+      hairStyle: any(HAIR_STYLES).id,
+      hairColor: any(HAIR_COLORS).id,
+      top: any(TOP_STYLES).id,
+      topColor: any(CLOTHING_COLORS).id,
+      pantsColor: any(CLOTHING_COLORS).id,
+    };
+  }
+
+  private spawnWalkers(walkY: [number, number]): void {
+    const count = this.areaId === 'midtown' ? 4 : 3;
+    for (let i = 0; i < count; i++) {
+      const key = `npc-walker-${i}`;
+      registerCharacter(this, key, this.randomLook());
+      const y = walkY[0] + Math.random() * (walkY[1] - walkY[0]);
+      const x = 20 + Math.random() * (this.layout.width - 40);
+      const shadow = this.add.image(x, y, 'shadow').setOrigin(0.5, 0.6).setDepth(y - 0.5);
+      const sprite = this.add.sprite(x, y, key, 'side-0').setOrigin(0.5, 1).setDepth(y);
+      const dir = Math.random() < 0.5 ? 1 : -1;
+      sprite.setFlipX(dir < 0);
+      this.walkers.push({ sprite, shadow, speed: 22 + Math.random() * 16, dir, clock: Math.random() * 1000 });
+    }
+  }
+
+  private updateStreetLife(deltaMs: number): void {
+    const street = this.layout.street;
+    if (!street) return;
+    const { paused } = this.deps.sim.state.clock;
+    if (paused) return;
+    const W = this.layout.width;
+    for (const w of this.walkers) {
+      w.clock += deltaMs;
+      let x = w.sprite.x + (w.dir * w.speed * deltaMs) / 1000;
+      if (x < -12 || x > W + 12) {
+        // Walk off one end, come back on the other a little later at a new height.
+        w.dir = Math.random() < 0.5 ? 1 : -1;
+        x = w.dir > 0 ? -10 : W + 10;
+        const y = street.walkY[0] + Math.random() * (street.walkY[1] - street.walkY[0]);
+        w.sprite.setY(y).setDepth(y);
+        w.shadow.setY(y).setDepth(y - 0.5);
+        w.sprite.setFlipX(w.dir < 0);
+      }
+      w.sprite.setX(x);
+      w.shadow.setX(x);
+      w.sprite.setFrame(`side-${1 + (Math.floor(w.clock / 200) % 2)}`);
+    }
+    this.carClock -= deltaMs;
+    if (this.carClock <= 0) {
+      this.carClock = 1800 + Math.random() * 3500;
+      this.spawnCar(street.lanes);
+    }
+  }
+
+  private spawnCar(lanes: number[]): void {
+    const lane = Math.floor(Math.random() * lanes.length);
+    const right = lane === 0;
+    const y = lanes[lane]!;
+    const key = CAR_KEYS[Math.floor(Math.random() * CAR_KEYS.length)]!;
+    const W = this.layout.width;
+    const car = this.add.image(right ? -44 : W + 44, y, key).setOrigin(0.5, 1).setFlipX(!right).setDepth(y + 2);
+    const speed = 70 + Math.random() * 50;
+    this.tweens.add({
+      targets: car,
+      x: right ? W + 44 : -44,
+      duration: ((W + 88) / speed) * 1000,
+      onComplete: () => car.destroy(),
+    });
+  }
+
+  // ---------- Player movement ----------
 
   private move(deltaMs: number): void {
     const k = this.keys;
@@ -278,7 +357,7 @@ export class ApartmentScene extends Phaser.Scene {
     const { sim, bridge } = this.deps;
     if (sim.state.clock.paused || sim.activity.isBusy()) return;
     const world = this.cameras.main.getWorldPoint(screenX, screenY);
-    const target = INTERACTABLES.find((it) => it.tapAreas.some((r) => contains(r, world.x, world.y))) ?? null;
+    const target = this.layout.interactables.find((it) => it.tapAreas.some((r) => contains(r, world.x, world.y))) ?? null;
     const here = { x: this.player.x, y: this.player.y };
     if (target && contains(target.zone, here.x, here.y)) {
       this.path = null;
@@ -316,7 +395,7 @@ export class ApartmentScene extends Phaser.Scene {
 
   private showTapMarker(at: Point): void {
     const ring = this.add.circle(at.x, at.y - 1, 4).setStrokeStyle(1, 0xffb347, 0.9).setDepth(9_999);
-    if (document.documentElement.dataset.motion === 'reduce') {
+    if (reducedMotion()) {
       this.time.delayedCall(350, () => ring.destroy());
       return;
     }
@@ -328,7 +407,7 @@ export class ApartmentScene extends Phaser.Scene {
     const nx = this.player.x + dx;
     const ny = this.player.y + dy;
     const feet = { x: nx - FEET_W / 2, y: ny - FEET_H, w: FEET_W, h: FEET_H };
-    if (COLLIDERS.some((c) => overlaps(feet, c))) return;
+    if (this.layout.colliders.some((c) => overlaps(feet, c))) return;
     this.player.setPosition(nx, ny);
   }
 
@@ -350,7 +429,7 @@ export class ApartmentScene extends Phaser.Scene {
     const { x, y } = this.player;
     let best: Interactable | null = null;
     let bestDist = Infinity;
-    for (const it of INTERACTABLES) {
+    for (const it of this.layout.interactables) {
       if (!contains(it.zone, x, y)) continue;
       const cx = it.zone.x + it.zone.w / 2;
       const cy = it.zone.y + it.zone.h / 2;
@@ -367,29 +446,34 @@ export class ApartmentScene extends Phaser.Scene {
   private reportLocation(): void {
     const { x, y } = this.player;
     this.deps.sim.dispatch('setPlayerLocation', {
-      area: AREA, x: Math.round(x), y: Math.round(y), facing: this.facing,
+      area: this.areaId, x: Math.round(x), y: Math.round(y), facing: this.facing,
     });
   }
 
   private updateLighting(): void {
     const t = toCalendar(this.deps.sim.state.clock.totalMinutes);
     const dark = darknessAt(t.hour + t.minute / 60);
-    this.night.setAlpha(dark * 0.68);
+    const L = this.layout;
+    const shade = L.lighting === 'home' ? 0.68 : L.lighting === 'street' ? 0.6 : 0.12;
+    this.night.setAlpha(dark * shade);
     this.glows.forEach((g) => g.setAlpha(dark * 0.9));
-    const day = Phaser.Display.Color.ValueToColor(0x9fd3f0);
-    const night = Phaser.Display.Color.ValueToColor(0x1c2350);
-    const c = Phaser.Display.Color.Interpolate.ColorWithColor(day, night, 100, dark * 100);
-    this.sky.setFillStyle(Phaser.Display.Color.GetColor(c.r, c.g, c.b));
+    if (this.sky) {
+      const day = Phaser.Display.Color.ValueToColor(0x9fd3f0);
+      const night = Phaser.Display.Color.ValueToColor(0x1c2350);
+      const c = Phaser.Display.Color.Interpolate.ColorWithColor(day, night, 100, dark * 100);
+      this.sky.setFillStyle(Phaser.Display.Color.GetColor(c.r, c.g, c.b));
+    }
   }
 
   /**
    * The world renders in the space the HUD leaves free. The canvas is in
    * device pixels, so the zoom is a whole number of device pixels per world
-   * pixel: crisp on any screen. When the room fits it's centred; otherwise
-   * (a tiny window, or a big manual zoom) the camera follows the player.
+   * pixel: crisp on any screen. Small areas are centred; big ones (streets)
+   * show about a room's worth and follow the player.
    */
   private fitCamera(): void {
     if (!this.player) return;
+    const L = this.layout;
     const dpr = 1 / this.scale.zoom; // the game is displayed at 1/dpr
     const { width, height } = this.scale;
     const top = Math.round(this.deps.bridge.hudInsets.top * dpr);
@@ -398,7 +482,7 @@ export class ApartmentScene extends Phaser.Scene {
     const cam = this.cameras.main;
     cam.setViewport(0, top, width, viewH);
     const margin = 8 * dpr;
-    const fit = Math.floor(Math.min((width - margin * 2) / ROOM_W, (viewH - margin) / ROOM_H));
+    const fit = Math.floor(Math.min((width - margin * 2) / Math.min(L.width, VIEW_W), (viewH - margin) / Math.min(L.height, VIEW_H)));
     const chosen = settings.get().zoom; // in CSS pixels per world pixel
     // Never smaller than 1 CSS pixel per world pixel; follow the player if that overflows.
     const zoom = Math.max(Math.ceil(dpr), chosen === 'auto' ? fit : Math.round(chosen * dpr));
@@ -406,16 +490,17 @@ export class ApartmentScene extends Phaser.Scene {
     cam.setRoundPixels(true);
     const viewW = width / zoom;
     const viewHw = viewH / zoom;
-    if (ROOM_W <= viewW && ROOM_H <= viewHw) {
+    if (L.width <= viewW && L.height <= viewHw) {
       cam.stopFollow();
       cam.removeBounds();
-      cam.centerOn(ROOM_W / 2, ROOM_H / 2);
+      cam.centerOn(L.width / 2, L.height / 2);
     } else {
-      // Bounds at least as big as the view keep a narrow room centred instead of pinned left.
-      const bw = Math.max(ROOM_W, viewW);
-      const bh = Math.max(ROOM_H, viewHw);
-      cam.setBounds(ROOM_W / 2 - bw / 2, ROOM_H / 2 - bh / 2, bw, bh);
+      // Bounds at least as big as the view keep a narrow area centred instead of pinned left.
+      const bw = Math.max(L.width, viewW);
+      const bh = Math.max(L.height, viewHw);
+      cam.setBounds(L.width / 2 - bw / 2, L.height / 2 - bh / 2, bw, bh);
       cam.startFollow(this.player, true, 0.2, 0.2);
+      cam.centerOn(this.player.x, this.player.y);
     }
   }
 }

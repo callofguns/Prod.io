@@ -26,7 +26,8 @@ Shipped as six updates, each its own feature branch:
 - Phone v1: Bank, BeatHub stats, Messages.
 - **Playtest:** make beats, sell leases, pay rent, level up skills, go broke or not.
 
-## Milestone 2 — The City and Social Media
+## Milestone 2 — The City and Social Media ✅ done
+Shipped as one update (owner's choice). Downtown moved to a later milestone; Eastside and Midtown first.
 - Bayport city map with 2–3 districts to start (Eastside, Midtown, Downtown).
 - Enter buildings: gear store, grocery store, café.
 - Transport: walk, bus, rideshare.

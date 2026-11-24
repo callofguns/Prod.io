@@ -14,6 +14,7 @@ import { ActionMenu, performAction } from './ActionMenu';
 import { SleepOverlay } from './SleepOverlay';
 import { BeatMaker } from './daw/BeatMaker';
 import { LearnPanel } from './LearnPanel';
+import { GearStore } from './GearStore';
 import { BeatReport } from './BeatReport';
 import { Meter } from './components/Meter';
 import { Joystick } from './Joystick';
@@ -117,8 +118,8 @@ function Hints({ innerRef, joystick }: { innerRef: { current: HTMLDivElement | n
   if (isTouch()) {
     return (
       <div class="hints touch" ref={innerRef} aria-hidden="true">
-        <span>{joystick ? 'Drag the stick to walk' : 'Tap the floor to walk'}</span>
-        <span>Tap furniture to use it</span>
+        <span>{joystick ? 'Drag the stick to walk' : 'Tap the ground to walk'}</span>
+        <span>Tap things to use them</span>
       </div>
     );
   }
@@ -135,9 +136,9 @@ function Hints({ innerRef, joystick }: { innerRef: { current: HTMLDivElement | n
   );
 }
 
-type Menu = 'none' | 'pause' | 'settings' | 'daw' | 'learn' | 'report';
+type Menu = 'none' | 'pause' | 'settings' | 'daw' | 'learn' | 'report' | 'gear';
 /** Full-screen panels that handle their own keys. */
-const SELF_KEYED: Menu[] = ['daw', 'learn', 'report'];
+const SELF_KEYED: Menu[] = ['daw', 'learn', 'report', 'gear'];
 
 export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitle: () => void }) {
   const [debugOpen, setDebugOpen] = useState(false);
@@ -213,6 +214,10 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       events.on('learnRequested', () => {
         setPhone(null);
         setMenu('learn');
+      }),
+      events.on('shopRequested', () => {
+        setPhone(null);
+        setMenu('gear');
       }),
       events.on('beatFinished', ({ beat }) => {
         setReportBeatId(beat.id);
@@ -331,6 +336,11 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       {menu === 'learn' && (
         <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu('none')}>
           <LearnPanel session={session} onClose={() => setMenu('none')} onStarted={closeIntoWork} />
+        </div>
+      )}
+      {menu === 'gear' && (
+        <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu('none')}>
+          <GearStore session={session} onClose={() => setMenu('none')} />
         </div>
       )}
       {menu === 'report' && reportBeat && (

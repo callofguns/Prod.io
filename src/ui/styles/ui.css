@@ -1031,3 +1031,105 @@ html[data-motion='reduce'] *::after { animation: none !important; transition: no
  * the element, the badge will reappear and this selector needs updating.
  */
 #nl-badge-frame { display: none !important; }
+
+/* ---------- Gear store (Noise Depot) ---------- */
+.gear-summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; margin: -4px 0 4px; font-size: var(--text-sm); }
+.gear-summary strong { font-weight: 700; }
+.gear-summary .menu-note { flex-basis: 100%; margin: 0; }
+.gear-slot + .gear-slot { margin-top: 2px; }
+.gear-current { text-transform: none; letter-spacing: 0; font-weight: 600; }
+
+/* ---------- Maps ---------- */
+.maps-here { margin: 0; font-family: var(--font-display); font-size: 22px; color: var(--glass-text); }
+.row-time.is-open { color: var(--lcd-on); }
+.row-time.is-closed { color: #d27a6a; }
+
+/* ---------- LoopVault ---------- */
+.vault-cta { display: flex; align-items: flex-end; gap: 12px; }
+.vault-cta .app-empty { flex: 1; }
+.vault-filters { overflow-x: auto; scrollbar-width: none; }
+.vault-filters .tab { flex: none; padding: 7px 10px; }
+.vault-row { gap: 10px; }
+.loop-play {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 50%;
+  background: linear-gradient(var(--key-hi), var(--key));
+  color: var(--glass-text);
+  font-size: 11px;
+  cursor: pointer;
+}
+.loop-play[aria-pressed='true'] { background: var(--lcd-on); color: #2a1a05; }
+
+/* ---------- InstaSnap ---------- */
+.snap-profile { display: flex; align-items: center; gap: 12px; }
+.snap-avatar {
+  flex: none;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: #2a1a05;
+  background: conic-gradient(from 200deg, #ffb347, #d8432b, #a05ad8, #ffb347);
+}
+.snap-profile .row-sub strong, .tube-progress strong { color: var(--glass-text); }
+.wide-order { width: 100%; padding: 9px 10px; }
+.snap-feed { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.snap-post { display: flex; gap: 10px; padding: 10px; border-radius: 10px; background: #0d0e12; }
+.snap-cover {
+  flex: none;
+  width: 52px;
+  height: 52px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  background: linear-gradient(135deg, #2a2440, #5d3f6a);
+  font-family: var(--font-display);
+  font-size: 22px;
+  color: var(--lcd-on);
+}
+.snap-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.snap-body .row-title { margin: 0; }
+.snap-body .row-sub { margin: 0; white-space: normal; }
+.snap-body .link-button { align-self: flex-start; margin-top: 4px; }
+
+/* ---------- ViewTube ---------- */
+.tube-progress { display: flex; flex-direction: column; gap: 2px; margin-bottom: 8px; }
+.tube-tag { width: 100%; text-align: left; gap: 10px; }
+.tube-tag .row-title { color: var(--glass-text) !important; }
+.tube-tag[aria-pressed='true'] .row-title { color: var(--lcd-on) !important; }
+.tube-radio { flex: none; color: var(--lcd-on); }
+.tube-video { gap: 10px; align-items: flex-start; }
+.tube-thumb {
+  flex: none;
+  width: 44px;
+  height: 28px;
+  border-radius: 5px;
+  display: grid;
+  place-items: center;
+  background: #2a2d35;
+  color: var(--glass-text);
+  font-size: 10px;
+}
+.tube-video .row-sub { white-space: normal; }
+.tube-comment { font-style: italic; }
+
+/* ---------- Beat maker loop slot ---------- */
+.daw-loop-select {
+  margin-top: 4px;
+  padding: 6px 8px;
+  border: 0;
+  border-radius: 6px;
+  background: var(--lcd);
+  color: var(--lcd-on);
+  font: inherit;
+  font-size: var(--text-xs);
+  font-weight: 600;
+  max-width: 100%;
+}
+.daw-loop-select:focus-visible { outline: 2px solid var(--lcd-on); outline-offset: 2px; }

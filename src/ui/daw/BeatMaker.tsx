@@ -10,6 +10,7 @@ import {
 } from '../../content/music';
 import { Lcd } from '../components/Lcd';
 import { Library } from './Library';
+import { BRANDS } from '../../content/brands';
 import { BeatReport } from '../BeatReport';
 import type { Beat } from '../../sim/core/state';
 
@@ -302,6 +303,30 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
                     </button>
                   ))}
                 </div>
+              </div>
+            )}
+            {page === 'melody' && (
+              <div class="daw-ctl">
+                <label class="silk" for="daw-loop">Loop · {BRANDS.loopStore}</label>
+                <select id="daw-loop" class="daw-loop-select" value={pattern.loopId ?? ''}
+                  onChange={(e) => {
+                    const id = e.currentTarget.value || null;
+                    edit((p) => { p.loopId = id; });
+                  }}>
+                  <option value="">No loop</option>
+                  {sim.loops.owned().map((l) => (
+                    <option key={l.id} value={l.id}>{l.name} · {GENRES[l.genre].name}{l.genre !== settings.genre ? ' (other genre)' : ''}</option>
+                  ))}
+                </select>
+                {pattern.loopId && (
+                  <input type="range" class="fader" min={0} max={1} step={0.05} aria-label="Loop level"
+                    value={pattern.levels.loop ?? 0.6}
+                    onInput={(e) => {
+                      const v = Number(e.currentTarget.value);
+                      edit((p) => { p.levels.loop = v; });
+                    }} />
+                )}
+                {sim.loops.owned().length === 0 && <span class="daw-tip">Buy loops on {BRANDS.loopStore} (phone) to layer them here.</span>}
               </div>
             )}
             <label class="daw-ctl">

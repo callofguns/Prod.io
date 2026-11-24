@@ -2,10 +2,11 @@ import {
   BASS_BASE, DRUM_LANES, MELODY_BASE, STEPS, degreeToMidi, type BeatSettings, type DrumLane, type Pattern,
 } from '../content/music';
 import { NOTE_STEPS, play808, playDrum, playNote, type BassVoice, type HatVoice } from './synths';
+import { loopById } from '../content/loops';
 
 /** One AudioContext for the whole game, created on the first user gesture. */
 let sharedCtx: AudioContext | null = null;
-function audioContext(): AudioContext {
+export function audioContext(): AudioContext {
   sharedCtx ??= new AudioContext({ latencyHint: 'interactive' });
   if (sharedCtx.state === 'suspended') void sharedCtx.resume();
   return sharedCtx;
@@ -22,7 +23,7 @@ const SCHEDULE_AHEAD_S = 0.12;
 export class BeatEngine {
   private ctx: AudioContext | null = null;
   private master: GainNode | null = null;
-  private buses: { drums: GainNode; bass: GainNode; melody: GainNode } | null = null;
+  private buses: { drums: GainNode; bass: GainNode; melody: GainNode; loop: GainNode } | null = null;
   private timer: number | null = null;
   private raf: number | null = null;
   private nextStep = 0;
@@ -117,7 +118,7 @@ export class BeatEngine {
       this.master = ctx.createGain();
       this.master.gain.value = this.volume;
       this.master.connect(comp).connect(ctx.destination);
-      this.buses = { drums: ctx.createGain(), bass: ctx.createGain(), melody: ctx.createGain() };
+      this.buses = { drums: ctx.createGain(), bass: ctx.createGain(), melody: ctx.createGain(), loop: ctx.createGain() };
       Object.values(this.buses).forEach((b) => b.connect(this.master!));
       this.applyLevels();
     }
@@ -130,6 +131,7 @@ export class BeatEngine {
     this.buses.drums.gain.value = l.drums;
     this.buses.bass.gain.value = l.bass;
     this.buses.melody.gain.value = l.melody;
+    this.buses.loop.gain.value = l.loop ?? 0.6;
   }
 
   private stepSeconds(): number {
@@ -180,6 +182,15 @@ export class BeatEngine {
     for (const d of p.melody[step] ?? []) {
       const midi = degreeToMidi(d, s.key, s.scale, MELODY_BASE);
       playNote(ctx, melody, p.instrument, midi, t, dur * NOTE_STEPS[p.instrument]);
+    }
+
+    // The LoopVault loop, played in the beat's key and scale.
+    const loop = p.loopId ? loopById(p.loopId) : undefined;
+    if (loop) {
+      for (const d of loop.notes[step] ?? []) {
+        const midi = degreeToMidi(d, s.key, s.scale, MELODY_BASE + loop.octave * 12);
+        playNote(ctx, this.buses!.loop, loop.instrument, midi, t, dur * NOTE_STEPS[loop.instrument]);
+      }
     }
   }
 }

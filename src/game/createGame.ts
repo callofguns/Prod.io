@@ -1,11 +1,11 @@
 import Phaser from 'phaser';
-import { ApartmentScene, type SceneDeps } from './scenes/ApartmentScene';
+import { WorldScene, type SceneDeps } from './scenes/WorldScene';
 
 /** Device pixels per CSS pixel, capped so huge displays don't render needlessly large canvases. */
 const pixelRatio = () => Math.min(3, Math.max(1, window.devicePixelRatio || 1));
 
 /**
- * Boots Phaser into the given element and starts in the player's apartment.
+ * Boots Phaser into the given element and starts wherever the player is.
  *
  * The canvas renders at the screen's real pixel density and is displayed at
  * CSS size. Scenes then scale the pixel art by a whole number of *device*
@@ -46,7 +46,7 @@ export function createGame(parent: HTMLElement, deps: SceneDeps): Phaser.Game {
   game.events.once(Phaser.Core.Events.READY, fit);
   game.events.once(Phaser.Core.Events.DESTROY, () => observer.disconnect());
 
-  game.scene.add('apartment', ApartmentScene, true, deps);
+  game.scene.add('world', WorldScene, true, deps);
   // Development builds only: lets browser tests map world positions to the screen.
   if (import.meta.env.DEV) (window as unknown as { __prodioGame?: Phaser.Game }).__prodioGame = game;
   return game;

@@ -60,6 +60,12 @@ Pillars:
 | BeatHub plans | **[LOCKED]** Free: 30% fee, 10 listings. Pro: $19.99/month, 0% fee, unlimited listings. |
 | Sales pace | **[LOCKED]** "Tight": steady work (2-3 beats a day) covers rent and food around weeks 3-4. |
 | Selling tools | **[LOCKED]** Paid promotion only for now (free downloads and tags/SEO not planned yet). |
+| City layout | **[LOCKED]** Separate walkable district maps (streets) with enterable buildings; travel between districts takes game time. Milestone 2 ships Eastside and Midtown. |
+| Getting around | **[LOCKED]** Bus ($2.75, every 15 min, 6:00-0:00), Ryda rideshare from the phone (about $12-17, evening surge) or walking (40 min, a little tiring). |
+| Gear | **[LOCKED]** Bought in person at Noise Depot (no online orders yet). Raises beat quality (×0.95 starter, up to about ×1.09) and makes beats faster. |
+| Loops | **[LOCKED]** LoopVault credits plan; one loop slot per beat. A loop lifts the melody part; overused loops lower BeatHub uniqueness. |
+| InstaSnap | **[LOCKED]** Beat snippet posts and paid boosts; followers and link taps send buyers to BeatHub. |
+| ViewTube | **[LOCKED]** Type-beat uploads with an artist tag; views, subscribers and BeatHub link clicks. Ads only after 1,000 subscribers and 4,000 watch hours, paid monthly over $100. |
 | World generation | **[LOCKED]** Mixed: a fixed cast of landmark NPCs/businesses plus seeded random NPCs and companies. |
 
 ## 3. Player
@@ -127,11 +133,23 @@ Laptop/PC tier, DAW tier, headphones, studio monitors, audio interface, micropho
 MIDI keyboard, acoustic treatment and plugins. Each item has a price, a quality bonus
 and an unlock requirement. Bought at the music-gear store or online.
 
+**As built (Milestone 2):** one item per slot counts (the best you own): computer, software, headphones,
+speakers (need an audio interface), audio interface and MIDI keyboard. Quality bonuses add to the
+starter ×0.95 (full setup about ×1.085, capped at ×1.10); speed factors multiply the time a beat takes
+(full setup about 59%). Prices $89-$1,599.
+
 ### 4.4 Loops and samples
 - **LoopVault** (Splice-like): monthly subscription for credits; each loop costs credits.
   Loops have a quality, genre, mood and *overuse* level (popular loops lower uniqueness).
 - Uncleared samples raise the risk of a takedown or claim when a song blows up.
 - Later the player can sell their own **sample packs and drum kits** (Sound Design skill).
+
+**As built (Milestone 2):** Sounds plan $9.99/30 days for 25 credits (roll over up to 75 while
+subscribed; credit pack 10 for $5.99). Loops cost 2-8 credits; 10 at launch, 3 new every Monday.
+The loop plays in the beat's key; the melody part becomes 45% yours + 55% the loop's quality, and a
+loop from another genre costs 10 genre-fit points. Overuse grows with a loop's popularity and age
+(0 to its popularity over a few weeks) and cuts BeatHub uniqueness by up to 45%; two of your beats on
+the same loop count as similar.
 
 ## 5. Beat selling
 
@@ -181,6 +199,20 @@ The phone is the main UI hub. Apps:
 | Maps | — | City navigation, fast travel |
 
 Each platform shows analytics: streams/views over time, top tracks, audience by city, revenue.
+
+**As built (Milestone 2):** when you post, the post's totals are decided from the beat's score
+(quality factor (score/60)³), your audience, trends, Marketing skill and luck, then fill in over time.
+- InstaSnap: 22% of followers see a post plus about 70 Explore viewers for an average beat; extra posts
+  within a day reach 60% as many each. Boosts: $10/$25/$50 for about 120 people reached per dollar.
+  Snippets take 20 minutes. Starting followers depend on background (64 / 112 / 340).
+- ViewTube: lifetime views ≈ 90 × quality^1.2 × tag heat × channel size boost + 12% of subscribers;
+  most views in the first week, then a search tail for months; about 1% of uploads (more for great
+  beats) get picked up by the algorithm for 8-25× the views. Tags are fictional artists whose buzz
+  changes weekly; a tag from another genre gets 30% of the traffic. 1.5% of viewers open the BeatHub
+  link; RPM $1.30 once in the Partner Program. Uploads take 45 minutes.
+- Your total audience also lifts BeatHub traffic: × (1 + log10(1 + audience/100) / 5).
+- Calibrated headlessly: a steady producer who posts and uploads every beat earns about 1.7-1.9× the
+  BeatHub income of one who doesn't by week 8, with about 500 subscribers; monetization is a months-long goal.
 
 ### Approximate payout model (real-world based)
 | Platform | Per stream / view |
@@ -264,6 +296,12 @@ One fictional city. Working name **Bayport**. Districts:
 - **Hillside**: luxury homes and high-end studios (late game).
 
 Getting around: walking, bus (cheap, slow), rideshare (fast, costs money), and later your own car.
+
+**As built (Milestone 2):** Eastside (your building, Kwik Mart, bus stop, the road to Midtown) and
+Midtown (Noise Depot, Grindhouse Café, bus stop, closed shops for later). Shops keep hours and send you
+out at closing: Kwik Mart 7-23 (groceries cheaper than delivery, into your fridge), Noise Depot 10-20,
+Grindhouse Café 7-19 (coffee for energy, food, an hour off for mood). The phone's Maps app lists places,
+hours and Ryda rides.
 
 ## 11. Character creation
 Name, producer alias, appearance (skin tone, hair, outfit from pixel-art parts) and a

@@ -45,7 +45,8 @@ export class StudioSystem implements System {
   }
 
   hasPlayableContent(pattern: Pattern): boolean {
-    return DRUM_LANES.some((l) => pattern.drums[l].some((v) => v > 0)) || pattern.bass.some((d) => d >= 0) || pattern.melody.some((n) => n.length > 0);
+    return DRUM_LANES.some((l) => pattern.drums[l].some((v) => v > 0)) || pattern.bass.some((d) => d >= 0)
+      || pattern.melody.some((n) => n.length > 0) || !!pattern.loopId;
   }
 
   private finish(rawTitle: string): CommandResult {
