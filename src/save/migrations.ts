@@ -1,4 +1,6 @@
-import { STATE_VERSION, type GameState } from '../sim/core/state';
+import { STATE_VERSION, emptyBeatHub, type GameState } from '../sim/core/state';
+import { createRng } from '../sim/core/rng';
+import { initialTrends } from '../sim/trends';
 import { DEFAULT_LOOK_CHOICE } from '../content/looks';
 import { backgroundById, startingSkills } from '../content/backgrounds';
 import { CREDIT, NEEDS, STARTING_FRIDGE } from '../content/living';
@@ -76,6 +78,11 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
       activity: activity?.kind === 'producing' ? { startProductivity: 1, ...activity } : activity,
       learning: { courses: [] },
     };
+  },
+  // v6 -> v7: BeatHub store and genre trends.
+  6: (save) => {
+    const rng = save.rng as { seed: number };
+    return { ...save, beathub: emptyBeatHub(), trends: initialTrends(createRng((rng.seed ^ 0x5eed) >>> 0)) };
   },
 };
 

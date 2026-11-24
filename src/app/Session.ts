@@ -5,6 +5,9 @@ import { AutoSaver } from '../save/AutoSaver';
 import { createGame } from '../game/createGame';
 import { ViewBridge } from './ViewBridge';
 import { SKILLS } from '../content/skills';
+import { BRANDS } from '../content/brands';
+import { LEASES } from '../content/beathub';
+import { formatMoney } from '../sim/core/money';
 
 /** One running playthrough: simulation + autosave + Phaser world + view bridge. */
 export class Session {
@@ -21,6 +24,13 @@ export class Session {
     this.sim.events.on('skillLevelUp', ({ skill, level }) => {
       const name = SKILLS.find((s) => s.id === skill)?.name ?? skill;
       this.bridge.toast(`${name} is now ${level}.`, 'good');
+    });
+    this.sim.events.on('beatSold', ({ sale, beatTitle, net }) => {
+      const what = sale.tier === 'exclusive' ? 'Exclusive rights' : LEASES[sale.tier].name;
+      this.bridge.toast(`${BRANDS.beatStore}: ${what} of "${beatTitle}" sold to ${sale.buyer} (+${formatMoney(net)})`, 'good');
+    });
+    this.sim.events.on('offerReceived', ({ offer, beatTitle }) => {
+      this.bridge.toast(`Exclusive offer: ${formatMoney(offer.amount)} for "${beatTitle}". Open ${BRANDS.beatStore} to answer.`, 'good');
     });
     this.sim.events.on('messageReceived', ({ message }) => this.bridge.toast(`New message from ${message.from}. Press P to read.`));
   }

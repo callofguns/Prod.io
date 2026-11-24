@@ -6,6 +6,14 @@ import { BeatEngine } from '../../audio/BeatEngine';
 import { GENRES, emptyPattern, defaultSettings, keyLabel } from '../../content/music';
 import { formatClock, toCalendar } from '../../sim/core/time';
 
+function storeStatus(session: Session, beatId: number): string {
+  const l = session.sim.beathub.listing(beatId);
+  if (!l) return '';
+  if (l.status === 'soldExclusive') return ` · sold exclusively to ${l.soldTo}`;
+  if (l.status === 'listed') return ` · on BeatHub (${l.sales} sale${l.sales === 1 ? '' : 's'})`;
+  return '';
+}
+
 /** Finished beats: listen back, or start a new beat from one. */
 export function Library({ session, onUse, onReport }: {
   session: Session; onUse: (beat: Beat) => void; onReport: (beat: Beat) => void;
@@ -54,6 +62,7 @@ export function Library({ session, onUse, onReport }: {
               <span class="library-title">{b.title}</span>
               <span class="library-meta">
                 {GENRES[b.settings.genre].name} · {b.settings.bpm} BPM · {keyLabel(b.settings)} · made {t.weekday} {t.month} {t.date}, {formatClock(t)}
+                {storeStatus(session, b.id)}
               </span>
             </span>
             <button class="key wide light" onClick={() => { engine.stop(); setPlayingId(null); onReport(b); }}>Report</button>

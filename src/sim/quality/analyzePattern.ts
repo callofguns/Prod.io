@@ -30,17 +30,24 @@ function cells(p: Pattern): Set<string> {
   return out;
 }
 
+const jaccard = (a: Set<string>, b: Set<string>) => {
+  if (a.size === 0 && b.size === 0) return 1;
+  let shared = 0;
+  for (const c of a) if (b.has(c)) shared++;
+  return shared / (a.size + b.size - shared);
+};
+
+/** 0-1 overlap between two beats' patterns. */
+export function beatSimilarity(a: Pattern, b: Pattern): number {
+  return jaccard(cells(a), cells(b));
+}
+
 /** 0-1 overlap with the closest stock starter groove (any genre). */
 export function starterSimilarity(p: Pattern): number {
   const mine = cells(p);
   if (mine.size === 0) return 0;
   let best = 0;
-  for (const g of Object.keys(GENRES) as GenreId[]) {
-    const stock = cells(starterPattern(g));
-    let shared = 0;
-    for (const c of mine) if (stock.has(c)) shared++;
-    best = Math.max(best, shared / (mine.size + stock.size - shared));
-  }
+  for (const g of Object.keys(GENRES) as GenreId[]) best = Math.max(best, jaccard(mine, cells(starterPattern(g))));
   return best;
 }
 

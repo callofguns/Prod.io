@@ -7,10 +7,16 @@ import { BankApp } from './BankApp';
 import { MessagesApp } from './MessagesApp';
 import { DashBiteApp } from './DashBiteApp';
 import { ProfileApp } from './ProfileApp';
+import { BeatHubApp } from './beathub/BeatHubApp';
 
-export type AppId = 'home' | 'bank' | 'messages' | 'dashbite' | 'profile';
+export type AppId = 'home' | 'bank' | 'messages' | 'dashbite' | 'profile' | 'beathub';
 
 const APPS: { id: Exclude<AppId, 'home'>; name: string; glyph: ComponentChildren }[] = [
+  {
+    id: 'beathub',
+    name: BRANDS.beatStore,
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v11.3A3.5 3.5 0 1 0 11 18.5V8h6V4z" /></svg>,
+  },
   {
     id: 'bank',
     name: 'Bank',
@@ -42,9 +48,11 @@ interface Props {
 }
 
 export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
-  useSimEvents(sim, ['minute', 'inboxChanged']);
+  useSimEvents(sim, ['minute', 'inboxChanged', 'offersChanged']);
   const t = toCalendar(sim.state.clock.totalMinutes);
   const unread = sim.messages.unreadCount();
+  const offers = sim.state.beathub.offers.filter((o) => o.status === 'open').length;
+  const badges: Partial<Record<AppId, number>> = { messages: unread, beathub: offers };
   const current = APPS.find((a) => a.id === app);
 
   return (
@@ -71,7 +79,7 @@ export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
                 <button key={a.id} class="app-icon" onClick={() => onOpenApp(a.id)}>
                   <span class="app-tile">
                     {a.glyph}
-                    {a.id === 'messages' && unread > 0 && <span class="app-badge">{unread}</span>}
+                    {(badges[a.id] ?? 0) > 0 && <span class="app-badge">{badges[a.id]}</span>}
                   </span>
                   {a.name}
                 </button>
@@ -81,6 +89,7 @@ export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
           {app === 'bank' && <BankApp sim={sim} onError={onError} />}
           {app === 'dashbite' && <DashBiteApp sim={sim} onError={onError} />}
           {app === 'profile' && <ProfileApp sim={sim} />}
+          {app === 'beathub' && <BeatHubApp sim={sim} onError={onError} />}
           {app === 'messages' && <MessagesApp sim={sim} />}
         </div>
       </div>

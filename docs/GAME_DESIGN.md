@@ -51,7 +51,12 @@ Pillars:
 | Beat ratings | **[LOCKED]** 0-100 score with a letter grade (S/A/B/C/D/F), a part breakdown, tips and XP gained. |
 | Pattern vs skills | **[LOCKED]** Skills first: each part is 30% pattern, 70% skill execution. |
 | Learning | **[LOCKED]** XP from finishing beats, free tutorials (capped at skill 35) and paid MasterMix courses. |
-| Trends | **[LOCKED]** Arrive with BeatHub (Milestone 1, update 6): they affect sales (appeal), not quality. |
+| Trends | **[LOCKED]** Arrive with BeatHub (Milestone 1, update 6): they affect sales (appeal), not quality. BeatHub shows ranks and directions, not numbers. |
+| BeatHub prices | **[LOCKED]** Store-wide price per lease tier, overridable per beat; higher prices sell less often. |
+| Exclusives | **[LOCKED]** Offers arrive by phone; accept, decline or counter once (Business skill improves odds). |
+| BeatHub plans | **[LOCKED]** Free: 30% fee, 10 listings. Pro: $19.99/month, 0% fee, unlimited listings. |
+| Sales pace | **[LOCKED]** "Tight": steady work (2-3 beats a day) covers rent and food around weeks 3-4. |
+| Selling tools | **[LOCKED]** Paid promotion only for now (free downloads and tags/SEO not planned yet). |
 | World generation | **[LOCKED]** Mixed: a fixed cast of landmark NPCs/businesses plus seeded random NPCs and companies. |
 
 ## 3. Player
@@ -142,6 +147,17 @@ and an unlock requirement. Bought at the music-gear store or online.
   channel, social posts and reputation.
 - An NPC artist who leases a beat may release a song with it. If that song blows up,
   the player gains credits, reputation and (for exclusives or negotiated deals) royalties.
+
+**As built (Milestone 1, update 6):** each hour, expected store sales =
+0.09 × (Σ listing weights)^0.6 × reputation × marketing, split across listings by
+weight. A listing's weight multiplies quality ((score/60)³), genre trend and tempo fit,
+uniqueness against your other listings, a price factor (demand peaks for revenue at the
+price buyers expect, which rises with quality and Business skill), promotion (×3) and
+freshness (new uploads get pushed; listings fade to 40% over about a month). Buyers shop
+more in the evening. Exclusive offers are a rare store-wide event aimed at beats scoring
+58+, roughly $500-2,000 for an unknown producer. Free plan 30% fee and 10 listings; Pro
+$19.99/month. Calibrated headlessly: a steady producer on Pro earns about $350 in week 3
+and $450 in week 4 from leases.
 
 ## 6. Social media and platforms (the phone)
 

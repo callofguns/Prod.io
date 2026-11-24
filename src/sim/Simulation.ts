@@ -14,6 +14,8 @@ import { BillsSystem } from './systems/BillsSystem';
 import { ActionSystem } from './systems/ActionSystem';
 import { StudioSystem } from './systems/StudioSystem';
 import { SkillSystem } from './systems/SkillSystem';
+import { TrendSystem } from './systems/TrendSystem';
+import { BeatHubSystem } from './systems/BeatHubSystem';
 
 /** A system owns one slice of the game rules. */
 export interface System {
@@ -39,6 +41,8 @@ export class Simulation {
   readonly actions: ActionSystem;
   readonly studio: StudioSystem;
   readonly skills: SkillSystem;
+  readonly trends: TrendSystem;
+  readonly beathub: BeatHubSystem;
 
   constructor(public state: GameState) {
     this.clock = new ClockSystem(this);
@@ -52,6 +56,8 @@ export class Simulation {
     this.actions = new ActionSystem(this);
     this.studio = new StudioSystem(this);
     this.skills = new SkillSystem(this);
+    this.trends = new TrendSystem(this);
+    this.beathub = new BeatHubSystem(this);
     new DebugSystem(this);
   }
 

@@ -5,6 +5,8 @@ import { BACKGROUNDS, backgroundById, startingSkills, type Background, type Star
 import { DEFAULT_LOOK_CHOICE, type LookChoice } from '../../content/looks';
 import type { SkillId, Skills } from '../../content/skills';
 import type { BeatQuality } from '../quality/rateBeat';
+import { DEFAULT_PRICES, type LeaseTier, type PlanId } from '../../content/beathub';
+import { initialTrends, type TrendState } from '../trends';
 import { startingMessages } from '../../content/startingMessages';
 import { CREDIT, NEEDS, STARTING_FRIDGE, type FridgeItem } from '../../content/living';
 import type { BeatSettings, Pattern } from '../../content/music';
@@ -31,6 +33,89 @@ export interface GameState {
   activity: Activity | null;
   studio: StudioState;
   learning: LearningState;
+  beathub: BeatHubState;
+  trends: TrendState;
+}
+
+export interface Listing {
+  beatId: number;
+  listedAt: number;
+  /** Per-beat price overrides; tiers not set here use the store-wide prices. */
+  prices: Partial<Record<LeaseTier, Cents>>;
+  plays: number;
+  sales: number;
+  /** What you received after fees. */
+  revenue: Cents;
+  promotedUntil: number | null;
+  status: 'listed' | 'unlisted' | 'soldExclusive';
+  soldTo: string | null;
+}
+
+export interface Sale {
+  id: number;
+  minute: number;
+  beatId: number;
+  tier: LeaseTier | 'exclusive';
+  buyer: string;
+  gross: Cents;
+  fee: Cents;
+}
+
+export type OfferStatus = 'open' | 'countered' | 'accepted' | 'declined' | 'expired' | 'passed' | 'closed';
+
+export interface Offer {
+  id: number;
+  beatId: number;
+  buyer: string;
+  amount: Cents;
+  createdAt: number;
+  expiresAt: number;
+  status: OfferStatus;
+  /** Your counter-offer, if you sent one (only one per offer). */
+  counter: Cents | null;
+  replyAt: number | null;
+}
+
+export interface DayStat {
+  /** 1-based game day. */
+  day: number;
+  plays: number;
+  sales: number;
+  revenue: Cents;
+}
+
+export interface BeatHubState {
+  plan: PlanId;
+  /** When Pro renews (or ends, if cancelled). */
+  proRenewsAt: number | null;
+  proCancelled: boolean;
+  defaultPrices: Record<LeaseTier, Cents>;
+  listings: Listing[];
+  /** Newest last, trimmed to SALES_LIMIT. */
+  sales: Sale[];
+  offers: Offer[];
+  /** Daily totals, newest last, trimmed to HISTORY_DAYS. */
+  history: DayStat[];
+  /** Lifetime lease sales: your store's reputation. */
+  leaseSales: number;
+  nextSaleId: number;
+  nextOfferId: number;
+}
+
+export function emptyBeatHub(): BeatHubState {
+  return {
+    plan: 'free',
+    proRenewsAt: null,
+    proCancelled: false,
+    defaultPrices: { ...DEFAULT_PRICES },
+    listings: [],
+    sales: [],
+    offers: [],
+    history: [],
+    leaseSales: 0,
+    nextSaleId: 1,
+    nextOfferId: 1,
+  };
 }
 
 export interface LearningState {
@@ -85,7 +170,8 @@ export type Activity =
 
 export type Debt = StartingDebt;
 
-export type TransactionCategory = 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'education' | 'other';
+export type TransactionCategory =
+  | 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'education' | 'marketing' | 'subscription' | 'other';
 
 export interface Transaction {
   id: number;
@@ -136,7 +222,7 @@ export interface PlayerState {
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 6;
+export const STATE_VERSION = 7;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -155,10 +241,12 @@ export const DEFAULT_SETUP: NewGameSetup = {
 
 export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_SETUP, now = new Date()): GameState {
   const bg = backgroundById(setup.background);
+  const rng = createRng(seed);
+  const trends = initialTrends(rng);
   return {
     version: STATE_VERSION,
     createdAt: now.toISOString(),
-    rng: createRng(seed),
+    rng,
     clock: { totalMinutes: START_MINUTE, speed: 1, paused: false },
     player: {
       name: setup.name,
@@ -186,5 +274,7 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
     activity: null,
     studio: { draft: null, beats: [], nextBeatId: 1 },
     learning: { courses: [] },
+    beathub: emptyBeatHub(),
+    trends,
   };
 }

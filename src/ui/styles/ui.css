@@ -871,6 +871,121 @@ button { font: inherit; color: inherit; }
 
 .library-row .grade { flex: none; }
 
+/* ---------- BeatHub app ---------- */
+.tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.tile { display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 10px; background: #0d0e12; }
+.tile-label { font-size: var(--text-xs); color: var(--glass-soft); font-weight: 600; }
+.tile-value { font-size: 20px; font-weight: 600; color: var(--glass-text); }
+.tiles-note { margin-top: 6px; }
+
+.chart { margin: 0; display: flex; flex-direction: column; gap: 6px; }
+.chart-head { display: flex; justify-content: space-between; align-items: baseline; }
+.chart-head .app-heading { margin: 0; }
+.chart-toggle, .link-button {
+  border: 0;
+  background: none;
+  padding: 0;
+  color: var(--lcd-on);
+  font-size: var(--text-xs);
+  font-weight: 700;
+  cursor: pointer;
+}
+.link-button { font-size: var(--text-sm); align-self: flex-start; }
+.danger-link { color: #ff8a70; }
+.chart-plot { position: relative; }
+.chart-plot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.chart-baseline { stroke: var(--glass-line); stroke-width: 1; }
+.chart-bar { fill: var(--chart-accent); transition: fill 80ms ease-out; }
+.chart-bar.hot { fill: var(--chart-accent-hover); }
+.chart-hit { fill: transparent; cursor: default; outline: none; }
+.chart-hit:focus-visible { stroke: var(--lcd-on); stroke-width: 1; }
+.chart-label { font-size: 10px; font-weight: 700; fill: var(--glass-text); }
+.chart-axis { font-size: 9.5px; fill: var(--glass-soft); font-variant-numeric: tabular-nums; }
+.chart-tip {
+  position: absolute;
+  top: -6px;
+  transform: translate(-50%, -100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 5px 8px;
+  border-radius: 6px;
+  background: #0b0c0f;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.chart-tip strong { font-size: var(--text-sm); color: var(--glass-text); }
+.chart-tip span { font-size: var(--text-xs); color: var(--glass-soft); }
+.chart-empty { position: absolute; inset: 0 0 18px; display: grid; place-items: center; margin: 0; font-size: var(--text-xs); color: var(--glass-soft); text-align: center; }
+.chart-table { width: 100%; border-collapse: collapse; font-size: var(--text-xs); }
+.chart-table th, .chart-table td { padding: 4px 2px; border-bottom: 1px solid var(--glass-line); text-align: right; font-variant-numeric: tabular-nums; }
+.chart-table th[scope='row'], .chart-table thead th:first-child { text-align: left; font-weight: 600; }
+.chart-table thead th { color: var(--glass-soft); font-weight: 700; }
+
+.grade.mini { min-width: 26px; height: 26px; padding: 0; border-radius: 6px; flex: none; }
+.grade.mini { font-family: var(--font-display); font-weight: 600; font-size: 15px; }
+.badge { flex: none; padding: 2px 7px; border-radius: 9px; background: #3a2a10; color: var(--lcd-on); font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; }
+.order:disabled { opacity: 0.4; cursor: not-allowed; }
+.ghost {
+  flex: none;
+  padding: 6px 10px;
+  border: 1px solid var(--glass-line);
+  border-radius: 8px;
+  background: none;
+  color: var(--glass-text);
+  font-weight: 600;
+  font-size: var(--text-sm);
+  cursor: pointer;
+}
+.ghost:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.price-row { align-items: center; }
+.price-stepper { display: flex; align-items: center; gap: 4px; flex: none; }
+.price-stepper .step {
+  width: 26px;
+  height: 26px;
+  border: 0;
+  border-radius: 7px;
+  background: linear-gradient(var(--key-hi), var(--key));
+  color: var(--glass-text);
+  font-size: 16px;
+  font-weight: 700;
+  cursor: pointer;
+}
+.price-stepper .step:disabled { opacity: 0.35; cursor: not-allowed; }
+.price-value { min-width: 64px; text-align: center; font-weight: 700; font-size: var(--text-sm); font-variant-numeric: tabular-nums; display: flex; flex-direction: column; align-items: center; }
+.custom-chip { font-size: 9px; color: var(--lcd-on); text-transform: uppercase; letter-spacing: 0.06em; }
+
+.detail-head { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
+.detail-head .grade.mini { width: 40px; height: 40px; font-size: 22px; }
+.detail-title { margin: 0; font-family: var(--font-display); font-size: var(--text-lg); color: var(--glass-text); }
+
+.offers { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px; }
+.offer { padding: 12px; border-radius: 12px; background: #0d0e12; box-shadow: inset 3px 0 0 var(--lcd-on); display: flex; flex-direction: column; gap: 4px; }
+.offer-amount { margin: 0; font-size: 26px; font-weight: 600; color: var(--glass-text); }
+.offer-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 6px; }
+.offer-actions .order { display: flex; flex-direction: column; align-items: center; line-height: 1.2; }
+.odds { font-size: 9px; font-weight: 700; opacity: 0.75; }
+
+.trend-list { list-style: none; margin: 0; padding: 0; counter-reset: trend; }
+.trend {
+  counter-increment: trend;
+  display: grid;
+  grid-template-columns: 22px 1fr auto;
+  grid-template-areas: 'rank name label' 'rank bpm bpm';
+  gap: 2px 8px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--glass-line);
+}
+.trend::before { content: counter(trend); grid-area: rank; font-family: var(--font-lcd); font-weight: 800; color: var(--glass-soft); font-size: 18px; }
+.trend-name { grid-area: name; font-weight: 700; }
+.trend-label { grid-area: label; font-size: var(--text-xs); font-weight: 700; color: var(--glass-soft); }
+.trend-label.hot, .trend-label.rising { color: var(--lcd-on); }
+.trend-bpm { grid-area: bpm; font-size: var(--text-xs); color: var(--glass-soft); }
+.plan-card { padding: 12px; border-radius: 12px; background: #0d0e12; display: flex; flex-direction: column; gap: 6px; }
+.plan-card .order, .plan-card .ghost { align-self: flex-start; }
+
 html[data-motion='reduce'] *,
 html[data-motion='reduce'] *::before,
 html[data-motion='reduce'] *::after { animation: none !important; transition: none !important; }
