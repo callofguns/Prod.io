@@ -282,3 +282,13 @@ button.prompt { border: 0; font: inherit; color: var(--ink); cursor: pointer; }
   .daw-foot .key.wide { height: 36px; font-size: var(--text-xs); }
   .daw-work { font-size: var(--text-xs); }
 }
+
+/* Tutorial card on a short landscape phone: smaller and tucked into the corner. */
+@media (max-height: 520px) {
+  .tut-card { bottom: calc(8px + var(--safe-bottom, 0px)); width: min(270px, 42vw); padding: 8px 10px; gap: 5px; }
+  .tut-card.bottom-left, .tut-card.top-left { left: calc(8px + var(--safe-left, 0px)); }
+  .tut-card.bottom-right, .tut-card.top-right { right: calc(8px + var(--safe-right, 0px)); }
+  .tut-card.top-left, .tut-card.top-right { top: calc(8px + var(--safe-top, 0px)); }
+  .tut-avatar { width: 26px; height: 26px; font-size: 11px; }
+  .tut-text { font-size: 12px; line-height: 1.35; }
+}

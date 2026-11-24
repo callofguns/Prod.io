@@ -4,6 +4,7 @@ import type { GameState } from '../sim/core/state';
 import { AutoSaver } from '../save/AutoSaver';
 import { createGame } from '../game/createGame';
 import { ViewBridge } from './ViewBridge';
+import { Tutorial } from './Tutorial';
 import { SKILLS } from '../content/skills';
 import { BRANDS } from '../content/brands';
 import { LEASES } from '../content/beathub';
@@ -14,10 +15,12 @@ export class Session {
   readonly sim: Simulation;
   readonly bridge = new ViewBridge();
   readonly autosaver: AutoSaver;
+  readonly tutorial: Tutorial;
   private game: Phaser.Game | null = null;
 
   constructor(state: GameState) {
     this.sim = new Simulation(state);
+    this.tutorial = new Tutorial(this.sim, this.bridge);
     this.autosaver = new AutoSaver(this.sim, (msg) => this.bridge.toast(msg, 'bad'));
     this.bridge.onInteract = (id) => this.bridge.openActions(this.bridge.actionsFor === id ? null : id);
     this.sim.events.on('notice', ({ text, tone }) => this.bridge.toast(text, tone));
@@ -39,10 +42,12 @@ export class Session {
   start(container: HTMLElement): void {
     this.game = createGame(container, { sim: this.sim, bridge: this.bridge });
     this.autosaver.start();
+    this.tutorial.start();
   }
 
   stop(): void {
     this.autosaver.stop();
+    this.tutorial.stop();
     this.game?.destroy(true);
     this.game = null;
   }

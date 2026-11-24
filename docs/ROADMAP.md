@@ -65,5 +65,5 @@ Shipped as one update (owner's choice). Downtown moved to a later milestone; Eas
 
 ## Milestone 7 — Polish and Release Prep
 - Replace placeholders with real pixel art, music and SFX.
-- Tutorial / onboarding, balance passes using headless economy runs.
+- Tutorial / onboarding (first version shipped early, after Milestone 2), balance passes using headless economy runs.
 - Desktop packaging.

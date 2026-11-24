@@ -43,7 +43,7 @@ Pillars:
 | NPC music | **[LOCKED]** NPC songs are data only; only the player's beats are audible. |
 | Devices | **[LOCKED]** Desktop (keyboard + mouse) and iPhone. Changed from "desktop only" after Milestone 1. |
 | Phone orientation | **[LOCKED]** Landscape only; a rotate notice covers portrait. |
-| Touch controls | **[LOCKED]** Tap the floor to walk, tap furniture to walk over and use it; optional on-screen joystick in Settings. |
+| Touch controls | **[LOCKED]** Tap the ground to walk, tap things to walk over and use it; optional on-screen joystick in Settings. |
 | Install | **[LOCKED]** Installable web app (Add to Home Screen): full screen, offline play. App Store not planned for now. |
 | Difficulty | **[LOCKED]** One fixed start; only the chosen background changes starting conditions. |
 | Saves | **[LOCKED]** One autosaved save per playthrough (saved each in-game day and on quit). |
@@ -66,6 +66,7 @@ Pillars:
 | Loops | **[LOCKED]** LoopVault credits plan; one loop slot per beat. A loop lifts the melody part; overused loops lower BeatHub uniqueness. |
 | InstaSnap | **[LOCKED]** Beat snippet posts and paid boosts; followers and link taps send buyers to BeatHub. |
 | ViewTube | **[LOCKED]** Type-beat uploads with an artist tag; views, subscribers and BeatHub link clicks. Ads only after 1,000 subscribers and 4,000 watch hours, paid monthly over $100. |
+| Tutorial | **[LOCKED]** Mentor Mo Lavelle guides one step at a time; targets glow (an arrow in the world) and steps tick off when you do them. Offered on a new game, skippable, replayable from the pause menu. Covers basics, a guided first trap beat, the report, BeatHub, going outside and social media. |
 | World generation | **[LOCKED]** Mixed: a fixed cast of landmark NPCs/businesses plus seeded random NPCs and companies. |
 
 ## 3. Player

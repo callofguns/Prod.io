@@ -15,6 +15,7 @@ import { SleepOverlay } from './SleepOverlay';
 import { BeatMaker } from './daw/BeatMaker';
 import { LearnPanel } from './LearnPanel';
 import { GearStore } from './GearStore';
+import { TutorialGuide } from './TutorialGuide';
 import { BeatReport } from './BeatReport';
 import { Meter } from './components/Meter';
 import { Joystick } from './Joystick';
@@ -153,6 +154,7 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
   const setPhone = (app: AppId | null) => {
     phoneRef.current = app;
     setPhoneApp(app);
+    session.bridge.setUi({ phoneApp: app });
   };
   useSimEvents(session.sim, ['inboxChanged']);
   const unread = session.sim.messages.unreadCount();
@@ -169,6 +171,7 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
     }
     menuRef.current = next;
     setMenuState(next);
+    session.bridge.setUi({ menu: next, ...(next === 'daw' ? {} : { daw: null }) });
   };
 
   const quit = async () => {
@@ -308,7 +311,7 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
           </button>
         )}
       </div>
-      <button class="key phone-button interactive" aria-label={`Phone (P)${unread ? `, ${unread} unread` : ''}`}
+      <button data-tut="phone-button" class="key phone-button interactive" aria-label={`Phone (P)${unread ? `, ${unread} unread` : ''}`}
         title="Phone (P)" onClick={() => setPhone(phoneApp ? null : 'home')}>
         <PhoneGlyph />
         {unread > 0 && <span class="phone-badge">{unread}</span>}
@@ -318,6 +321,7 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
           onError={(msg) => session.bridge.toast(msg, 'bad')} />
       )}
       <Toasts session={session} />
+      {menu !== 'pause' && menu !== 'settings' && <TutorialGuide session={session} />}
       {menu === 'none' && <Prompt session={session} />}
       {menu === 'none' && <ActionMenu session={session} />}
       <SleepOverlay session={session} />
@@ -351,7 +355,8 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       {(menu === 'pause' || menu === 'settings') && (
         <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu(menu === 'settings' ? 'pause' : 'none')}>
           {menu === 'pause' && (
-            <PauseMenu session={session} onResume={() => setMenu('none')} onSettings={() => setMenu('settings')} onQuit={quit} />
+            <PauseMenu session={session} onResume={() => setMenu('none')} onSettings={() => setMenu('settings')} onQuit={quit}
+              onTutorial={() => { session.tutorial.begin(); setMenu('none'); }} />
           )}
           {menu === 'settings' && (
             <SettingsPanel onClose={() => setMenu('pause')} saveData={{ exportState: async () => session.sim.state }} />

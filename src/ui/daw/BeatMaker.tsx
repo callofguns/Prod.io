@@ -62,6 +62,13 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
   const engine = useMemo(() => new BeatEngine(settings, pattern), []);
   const saveTimer = useRef<number | null>(null);
 
+  // Let the tutorial follow along.
+  const everPlayed = useRef(false);
+  if (playing) everPlayed.current = true;
+  useEffect(() => {
+    bridge.setUi({ daw: { page, playing, settings, pattern, everPlayed: everPlayed.current } });
+  }, [page, playing, settings, pattern]);
+
   // Keep the engine and the saved draft in sync with every edit.
   useEffect(() => {
     engine.update(settings, pattern);
@@ -159,7 +166,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
           />
         </div>
         <div class="daw-transport">
-          <button class={`key rec ${playing ? 'live' : ''}`} aria-pressed={playing} onClick={togglePlay}>
+          <button data-tut="daw-play" class={`key rec ${playing ? 'live' : ''}`} aria-pressed={playing} onClick={togglePlay}>
             <span class="led" />
             {playing ? 'Stop' : 'Play'} <span class="cap">Space</span>
           </button>
@@ -172,7 +179,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
           <p class="silk">Genre</p>
           <div class="choices" role="radiogroup" aria-label="Genre">
             {(Object.keys(GENRES) as GenreId[]).map((g) => (
-              <button key={g} class="key wide" role="radio" aria-checked={settings.genre === g} aria-pressed={settings.genre === g} onClick={() => pickGenre(g)}>
+              <button key={g} data-tut={`genre-${g}`} class="key wide" role="radio" aria-checked={settings.genre === g} aria-pressed={settings.genre === g} onClick={() => pickGenre(g)}>
                 <span class="led" />{GENRES[g].name}
               </button>
             ))}
@@ -200,7 +207,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
 
       <nav class="daw-pages" role="tablist" aria-label="Beat maker pages">
         {PAGES.map((p) => (
-          <button key={p.id} role="tab" aria-selected={page === p.id} aria-pressed={page === p.id} class="key wide" onClick={() => setPage(p.id)}>
+          <button key={p.id} data-tut={`page-${p.id}`} role="tab" aria-selected={page === p.id} aria-pressed={page === p.id} class="key wide" onClick={() => setPage(p.id)}>
             <span class="led" />{p.name}{p.id === 'library' ? ` (${sim.state.studio.beats.length})` : ''}
           </button>
         ))}
@@ -222,6 +229,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
                   return (
                     <button
                       key={`${lane}-${i}`}
+                      data-tut={`pad-${lane}-${i}`}
                       class={`pad ${v ? 'on' : ''} ${i % 4 === 0 ? 'beat' : ''} ${step === i ? 'now' : ''}`}
                       aria-pressed={v > 0}
                       aria-label={`${DRUM_LANE_NAMES[lane]} step ${i + 1}${v > 1 ? `, roll ×${v}` : ''}`}
@@ -248,7 +256,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
                     {STEP_INDEXES.map((i) => {
                       const on = pattern.bass[i] === d;
                       return (
-                        <button key={`b${d}-${i}`} class={`pad ${on ? 'on' : ''} ${i % 4 === 0 ? 'beat' : ''} ${step === i ? 'now' : ''}`}
+                        <button key={`b${d}-${i}`} data-tut={`bass-${d}-${i}`} class={`pad ${on ? 'on' : ''} ${i % 4 === 0 ? 'beat' : ''} ${step === i ? 'now' : ''}`}
                           aria-pressed={on} aria-label={`808 ${noteName(degreeToMidi(d, settings.key, settings.scale, BASS_BASE))} step ${i + 1}`}
                           onClick={() => {
                             edit((p) => {
@@ -276,7 +284,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
                 {STEP_INDEXES.map((i) => {
                   const on = pattern.melody[i]?.includes(d) ?? false;
                   return (
-                    <button key={`m${d}-${i}`} class={`pad ${on ? 'on' : ''} ${i % 4 === 0 ? 'beat' : ''} ${step === i ? 'now' : ''}`}
+                    <button key={`m${d}-${i}`} data-tut={`mel-${d}-${i}`} class={`pad ${on ? 'on' : ''} ${i % 4 === 0 ? 'beat' : ''} ${step === i ? 'now' : ''}`}
                       aria-pressed={on} aria-label={`Melody ${noteName(degreeToMidi(d, settings.key, settings.scale, MELODY_BASE))} step ${i + 1}`}
                       onClick={() => {
                         edit((p) => {
@@ -362,7 +370,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
         <p class="daw-work">
           {blocker ?? `Finishing takes about ${fmtDuration(work)} of in-game time and uses energy.`}
         </p>
-        <button class="key wide" disabled={!hasContent || !!blocker} onClick={() => setFinishing(true)}>Finish beat</button>
+        <button data-tut="daw-finish" class="key wide" disabled={!hasContent || !!blocker} onClick={() => setFinishing(true)}>Finish beat</button>
       </footer>
 
       {report && (

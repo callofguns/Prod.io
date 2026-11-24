@@ -100,7 +100,7 @@ export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
           {app === 'home' && (
             <div class="home-grid">
               {APPS.map((a) => (
-                <button key={a.id} class="app-icon" onClick={() => onOpenApp(a.id)}>
+                <button key={a.id} data-tut={`app-${a.id}`} class="app-icon" onClick={() => onOpenApp(a.id)}>
                   <span class="app-tile">
                     {a.glyph}
                     {(badges[a.id] ?? 0) > 0 && <span class="app-badge">{badges[a.id]}</span>}

@@ -41,6 +41,7 @@ export interface SimEvents {
   gearChanged: Record<string, never>;
   loopsChanged: Record<string, never>;
   socialChanged: Record<string, never>;
+  tutorialChanged: Record<string, never>;
   /** The player chose a shop counter that opens a full catalog (gear store). */
   shopRequested: { shop: 'gear' };
 }

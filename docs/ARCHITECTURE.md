@@ -98,6 +98,17 @@ means editing data, not code. Parody brand names live in one file.
 - New systems: `CitySystem`, `GearSystem`, `LoopSystem`, `SocialSystem` (InstaSnap + ViewTube).
   Social link clicks reach the store through `BeatHubSystem.externalVisits`.
 
+## Tutorial
+
+- Steps live in `src/app/tutorialSteps.ts`: Mo's text, CSS selectors to highlight (elements carry
+  `data-tut` attributes), an optional world object for the arrow, and a `done` check (or a Next button).
+- `src/app/Tutorial.ts` checks the current step four times a second and whenever the UI reports a change
+  (`ViewBridge.ui`: open phone app, open panel, the beat maker's live pattern). Progress is saved in
+  `GameState.tutorial` through the `setTutorial` command; counts at the start of each step (`baseline`)
+  make "finish a beat" mean a new one.
+- `src/ui/TutorialGuide.tsx` draws the card and the rings, and moves the card to a corner that covers
+  nothing highlighted.
+
 ## Proposed folder layout
 
 ```

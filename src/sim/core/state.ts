@@ -41,6 +41,14 @@ export interface GameState {
   gear: GearState;
   loops: LoopState;
   social: SocialState;
+  tutorial: TutorialState;
+}
+
+/** Mo's guided tutorial: whether it's offered/running, which step, and counts taken when the step began. */
+export interface TutorialState {
+  status: 'offered' | 'active' | 'off';
+  step: number;
+  baseline: Record<string, number>;
 }
 
 export interface GearState {
@@ -312,7 +320,7 @@ export interface PlayerState {
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 8;
+export const STATE_VERSION = 9;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -369,5 +377,6 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
     gear: emptyGear(),
     loops: emptyLoops(),
     social: emptySocial(bg.id),
+    tutorial: { status: 'offered', step: 0, baseline: {} },
   };
 }
