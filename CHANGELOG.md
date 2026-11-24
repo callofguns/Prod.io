@@ -3,7 +3,9 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
-## Unreleased
+## v1-beta.4
+
+Needs, sleep, food, rent and debt (Milestone 1, update 3).
 
 - Needs: Energy, Food and Mood, shown as LED meters on the HUD. Low levels hurt your mood;
   at zero energy you pass out wherever you are.
