@@ -6,6 +6,7 @@ import { DEFAULT_LOOK_CHOICE, type LookChoice } from '../../content/looks';
 import type { Skills } from '../../content/skills';
 import { startingMessages } from '../../content/startingMessages';
 import { CREDIT, NEEDS, STARTING_FRIDGE, type FridgeItem } from '../../content/living';
+import type { BeatSettings, Pattern } from '../../content/music';
 
 /**
  * The entire saveable game. Plain data only (no class instances or functions)
@@ -27,6 +28,25 @@ export interface GameState {
   home: HomeState;
   /** What the player is busy doing, if anything (blocks walking). */
   activity: Activity | null;
+  studio: StudioState;
+}
+
+export interface Beat {
+  id: number;
+  title: string;
+  settings: BeatSettings;
+  pattern: Pattern;
+  /** Game minute it was finished. */
+  createdAt: number;
+  /** In-game minutes of work it took. */
+  workMinutes: number;
+}
+
+export interface StudioState {
+  /** Work in progress in the beat maker, kept between sessions. */
+  draft: { settings: BeatSettings; pattern: Pattern } | null;
+  beats: Beat[];
+  nextBeatId: number;
 }
 
 export interface NeedsState {
@@ -48,7 +68,9 @@ export interface HomeState {
   nextDeliveryId: number;
 }
 
-export type Activity = { kind: 'sleeping'; startedAt: number; until: number; inBed: boolean };
+export type Activity =
+  | { kind: 'sleeping'; startedAt: number; until: number; inBed: boolean }
+  | { kind: 'producing'; startedAt: number; until: number; beatTitle: string };
 
 export type Debt = StartingDebt;
 
@@ -103,7 +125,7 @@ export interface PlayerState {
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 4;
+export const STATE_VERSION = 5;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -151,5 +173,6 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
     needs: { ...NEEDS.start },
     home: { fridge: { ...STARTING_FRIDGE }, deliveries: [], nextDeliveryId: 1 },
     activity: null,
+    studio: { draft: null, beats: [], nextBeatId: 1 },
   };
 }

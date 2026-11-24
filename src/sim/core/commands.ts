@@ -3,6 +3,7 @@ import type { Facing } from './state';
 import type { Speed } from './time';
 import type { SleepPlan } from '../systems/ActivitySystem';
 import type { Meal } from '../systems/HomeSystem';
+import type { BeatSettings, Pattern } from '../../content/music';
 
 /**
  * Every action the view can ask the simulation to perform. The view never
@@ -21,6 +22,9 @@ export interface SimCommands {
   orderDelivery: { itemId: string };
   takeLoan: { amount: Cents };
   performAction: { objectId: string; actionId: string };
+  saveDraft: { settings: BeatSettings; pattern: Pattern };
+  discardDraft: Record<string, never>;
+  finishBeat: { title: string };
   debugAddCash: { amount: Cents };
   debugSkipMinutes: { minutes: number };
   debugSetNeeds: { energy?: number; food?: number; mood?: number };

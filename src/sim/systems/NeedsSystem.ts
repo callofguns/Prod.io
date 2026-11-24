@@ -1,5 +1,6 @@
 import type { Simulation, System } from '../Simulation';
 import { NEEDS } from '../../content/living';
+import { PRODUCTION } from '../../content/production';
 import type { NeedsState } from '../core/state';
 
 const clamp = (v: number) => Math.max(0, Math.min(100, v));
@@ -50,7 +51,8 @@ export class NeedsSystem implements System {
       n.energy = clamp(n.energy + NEEDS.energyGainAsleep);
       n.food = clamp(n.food - NEEDS.foodDrainAsleep);
     } else {
-      const factor = n.food <= 0 ? NEEDS.starvingEnergyFactor : 1;
+      const producing = this.sim.state.activity?.kind === 'producing' ? PRODUCTION.energyFactor : 1;
+      const factor = (n.food <= 0 ? NEEDS.starvingEnergyFactor : 1) * producing;
       n.energy = clamp(n.energy - NEEDS.energyDrainAwake * factor);
       n.food = clamp(n.food - NEEDS.foodDrainAwake);
       if (n.energy <= 0) this.sim.activity.passOut();

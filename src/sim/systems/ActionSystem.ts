@@ -69,7 +69,17 @@ export class ActionSystem implements System {
           cook: { label: 'Cook a meal', detail: `Uses 1 of ${fridge.groceries} grocery portions · 30 min`, ...meal('cook') },
         };
       case 'computer':
-        return { produce: { label: 'Make a beat', check: () => 'The beat maker arrives in the next update.', run: () => fail('Not yet') } };
+        return {
+          produce: {
+            label: sim.state.studio.draft ? 'Keep working on your beat' : 'Make a beat',
+            detail: `${sim.state.studio.beats.length} finished beat${sim.state.studio.beats.length === 1 ? '' : 's'} in your library`,
+            check: () => sim.studio.blocker(),
+            run: () => {
+              sim.events.emit('studioRequested', {});
+              return { ok: true };
+            },
+          },
+        };
       case 'door':
         return { leave: { label: 'Leave the apartment', check: () => 'The city opens in Milestone 2.', run: () => fail('Not yet') } };
       default:
