@@ -7,7 +7,9 @@ import { GENRES, emptyPattern, defaultSettings, keyLabel } from '../../content/m
 import { formatClock, toCalendar } from '../../sim/core/time';
 
 /** Finished beats: listen back, or start a new beat from one. */
-export function Library({ session, onUse }: { session: Session; onUse: (beat: Beat) => void }) {
+export function Library({ session, onUse, onReport }: {
+  session: Session; onUse: (beat: Beat) => void; onReport: (beat: Beat) => void;
+}) {
   const beats = [...session.sim.state.studio.beats].reverse();
   const [playingId, setPlayingId] = useState<number | null>(null);
   const engine = useMemo(() => new BeatEngine(defaultSettings(), emptyPattern()), []);
@@ -45,12 +47,16 @@ export function Library({ session, onUse }: { session: Session; onUse: (beat: Be
             <button class="key" aria-pressed={playingId === b.id} aria-label={playingId === b.id ? `Stop ${b.title}` : `Play ${b.title}`} onClick={() => toggle(b)}>
               <span class="led" />{playingId === b.id ? '■' : '▶'}
             </button>
+            <span class={`grade grade-${b.quality.grade} small`} aria-label={`Grade ${b.quality.grade}`}>
+              <strong>{b.quality.grade}</strong><span>{b.quality.score}</span>
+            </span>
             <span class="library-main">
               <span class="library-title">{b.title}</span>
               <span class="library-meta">
                 {GENRES[b.settings.genre].name} · {b.settings.bpm} BPM · {keyLabel(b.settings)} · made {t.weekday} {t.month} {t.date}, {formatClock(t)}
               </span>
             </span>
+            <button class="key wide light" onClick={() => { engine.stop(); setPlayingId(null); onReport(b); }}>Report</button>
             <button class="key wide light" onClick={() => { engine.stop(); setPlayingId(null); onUse(b); }}>Use as starting point</button>
           </li>
         );

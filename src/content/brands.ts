@@ -15,4 +15,5 @@ export const BRANDS = {
   loopStore: 'LoopVault',
   delivery: 'DashBite',
   studentLoans: 'Nelnext Loan Services',
+  courses: 'MasterMix',
 } as const;

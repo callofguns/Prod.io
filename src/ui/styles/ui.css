@@ -778,6 +778,99 @@ button { font: inherit; color: inherit; }
 .sleep.producing { background: rgba(14, 12, 20, 0.6); }
 .sleep-unit .meter-label { width: 70px; }
 
+/* ---------- Beat report ---------- */
+.report { width: min(600px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
+.report-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 16px; }
+.report-meta { margin: 4px 0 0; font-size: var(--text-sm); color: var(--ink-soft); }
+.report-score { display: flex; align-items: stretch; gap: 10px; }
+.report-lcd { font-size: 46px; padding: 6px 12px 2px; min-width: 96px; text-align: center; }
+.report-lcd .ghost { inset: 6px 12px 2px; text-align: center; }
+.grade {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  background: var(--chassis-hi);
+  box-shadow: inset 0 0 0 2px var(--ink);
+  color: var(--ink);
+  line-height: 1.1;
+}
+.grade strong { font-family: var(--font-display); font-size: 30px; font-weight: 600; }
+.grade span { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+.grade-S, .grade-A { background: var(--lcd-on); color: #2a1a05; box-shadow: 0 0 12px rgba(255, 179, 71, 0.5); }
+.grade-D { background: #b9b6ac; }
+.grade-F { background: var(--record); color: #fff; box-shadow: none; }
+.grade.small { min-width: 48px; padding: 3px 6px; }
+.grade.small strong { font-size: 20px; }
+
+.report-parts { display: flex; flex-direction: column; gap: 6px; padding: 12px; border-radius: 8px; background: #2a2b31; box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.55); }
+.report-part { display: grid; grid-template-columns: 80px 1fr 32px; align-items: center; gap: 10px; }
+.report-part-name { font-size: var(--text-xs); font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #cfcabd; }
+.report-part .meter-leds { background: #18191d; }
+.report-part .meter-leds span { flex: 1; width: auto; }
+.report-part-value { font-family: var(--font-lcd); font-weight: 800; color: var(--lcd-on); text-align: right; }
+.report-list { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 4px; line-height: 1.45; }
+.report-list.good li::marker { color: #6c8a2a; }
+.report-list .skill-tip { color: var(--ink-soft); font-style: italic; }
+.xp-chips { list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.xp-chips li {
+  padding: 3px 9px;
+  border-radius: 12px;
+  background: var(--lcd);
+  color: var(--lcd-on);
+  font-size: var(--text-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Study panel ---------- */
+.learn { width: min(760px, 100%); max-height: calc(100vh - 32px); overflow-y: auto; }
+.learn-skills { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.learn-skill {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 4px 8px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: var(--chassis-hi);
+  box-shadow: 0 2px 0 var(--chassis-lo);
+}
+.learn-skill-name { font-weight: 600; font-size: var(--text-sm); }
+.learn-level { font-family: var(--font-lcd); font-weight: 800; font-size: 18px; color: var(--ink); }
+.learn-skill .key.wide { grid-column: 1 / -1; height: 30px; font-size: var(--text-xs); }
+.courses { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.course {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: var(--chassis-hi);
+  box-shadow: 0 2px 0 var(--chassis-lo);
+}
+.course.owned { box-shadow: 0 2px 0 var(--chassis-lo), inset 3px 0 0 var(--lcd-on); }
+.course-main { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.course-name { font-weight: 700; }
+.course-meta { font-size: var(--text-xs); color: var(--ink-soft); font-weight: 600; }
+.course-blurb { font-size: var(--text-sm); color: var(--ink-soft); }
+.course-side { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
+.course-progress { font-size: var(--text-xs); font-weight: 700; color: var(--ink-soft); }
+.course-done { font-weight: 700; color: #6c8a2a; }
+.study-label { margin: -6px 0 0; font-weight: 600; text-align: center; }
+
+/* ---------- Profile app ---------- */
+.profile-name { margin: 0; font-family: var(--font-display); font-size: 26px; color: var(--glass-text); }
+.skill-row { gap: 12px; }
+.skill-track { display: block; height: 5px; margin-top: 5px; border-radius: 3px; background: #0d0e12; overflow: hidden; }
+.skill-track span { display: block; height: 100%; background: var(--lcd-on); border-radius: 3px; }
+.skill-level { font-family: var(--font-lcd); font-weight: 800; font-size: 20px; color: var(--lcd-on); min-width: 28px; text-align: right; }
+
+.library-row .grade { flex: none; }
+
 html[data-motion='reduce'] *,
 html[data-motion='reduce'] *::before,
 html[data-motion='reduce'] *::after { animation: none !important; transition: none !important; }

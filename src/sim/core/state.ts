@@ -3,7 +3,8 @@ import { createRng, type RngState } from './rng';
 import { START_MINUTE, type Speed } from './time';
 import { BACKGROUNDS, backgroundById, startingSkills, type Background, type StartingDebt } from '../../content/backgrounds';
 import { DEFAULT_LOOK_CHOICE, type LookChoice } from '../../content/looks';
-import type { Skills } from '../../content/skills';
+import type { SkillId, Skills } from '../../content/skills';
+import type { BeatQuality } from '../quality/rateBeat';
 import { startingMessages } from '../../content/startingMessages';
 import { CREDIT, NEEDS, STARTING_FRIDGE, type FridgeItem } from '../../content/living';
 import type { BeatSettings, Pattern } from '../../content/music';
@@ -29,6 +30,12 @@ export interface GameState {
   /** What the player is busy doing, if anything (blocks walking). */
   activity: Activity | null;
   studio: StudioState;
+  learning: LearningState;
+}
+
+export interface LearningState {
+  /** Courses bought from MasterMix and how many sessions are done. */
+  courses: { id: string; sessionsDone: number }[];
 }
 
 export interface Beat {
@@ -40,6 +47,9 @@ export interface Beat {
   createdAt: number;
   /** In-game minutes of work it took. */
   workMinutes: number;
+  quality: BeatQuality;
+  /** Skill XP this beat earned. */
+  xp: Partial<Record<SkillId, number>>;
 }
 
 export interface StudioState {
@@ -70,11 +80,12 @@ export interface HomeState {
 
 export type Activity =
   | { kind: 'sleeping'; startedAt: number; until: number; inBed: boolean }
-  | { kind: 'producing'; startedAt: number; until: number; beatTitle: string };
+  | { kind: 'producing'; startedAt: number; until: number; beatTitle: string; startProductivity: number }
+  | { kind: 'studying'; startedAt: number; until: number; skill: SkillId; courseId: string | null; label: string };
 
 export type Debt = StartingDebt;
 
-export type TransactionCategory = 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'other';
+export type TransactionCategory = 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'education' | 'other';
 
 export interface Transaction {
   id: number;
@@ -125,7 +136,7 @@ export interface PlayerState {
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 5;
+export const STATE_VERSION = 6;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -174,5 +185,6 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
     home: { fridge: { ...STARTING_FRIDGE }, deliveries: [], nextDeliveryId: 1 },
     activity: null,
     studio: { draft: null, beats: [], nextBeatId: 1 },
+    learning: { courses: [] },
   };
 }

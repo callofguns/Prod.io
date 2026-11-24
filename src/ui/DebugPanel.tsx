@@ -68,6 +68,14 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
       </section>
 
       <section>
+        <p class="silk">Skills</p>
+        <div class="row">
+          <button class="key wide" onClick={() => sim.dispatch('debugBoostSkills', { amount: 10 })}>All skills +10</button>
+          <button class="key wide" onClick={() => sim.dispatch('debugBoostSkills', { amount: -10 })}>All skills −10</button>
+        </div>
+      </section>
+
+      <section>
         <p class="silk">Save</p>
         <div class="row">
           <button

@@ -17,6 +17,18 @@ the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full
 - Your work in progress is kept when you close the beat maker.
 - Volume setting.
 - Saves from v1-beta.4 upgrade automatically.
+- Beat ratings: every finished beat gets a 0-100 score and a grade (S to F), a breakdown
+  (drums, 808, melody, mix, genre fit), what works, what to fix, and the skill holding it
+  back. Your skills count most; the pattern you program nudges the score.
+- Stock starter grooves count as generic until you change them.
+- Skills grow from finishing beats, with diminishing returns at higher levels. Level-ups
+  pop up as notices.
+- Study at the computer: free ViewTube tutorials (1 hour, up to skill 35) and nine paid
+  MasterMix courses ($49 to $299) taken in 2-hour sessions.
+- Profile app on the phone: your skills, courses and best beat.
+- The beat library shows each beat's grade and its report.
+- Debug panel: raise or lower all skills.
+- Saves upgrade automatically; older beats are rated with your current skills.
 
 ## v1-beta.4
 

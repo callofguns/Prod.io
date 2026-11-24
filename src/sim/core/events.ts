@@ -2,6 +2,7 @@ import type { Cents } from './money';
 import type { CalendarTime } from './time';
 import type { Activity, Beat, Debt, Message, NeedsState } from './state';
 import type { FridgeItem } from '../../content/living';
+import type { SkillId, Skills } from '../../content/skills';
 
 /**
  * Every event the simulation can announce. Add new events here so that
@@ -25,6 +26,11 @@ export interface SimEvents {
   beatFinished: { beat: Beat };
   /** The player chose "Make a beat" at the computer. */
   studioRequested: Record<string, never>;
+  /** The player chose "Study" at the computer. */
+  learnRequested: Record<string, never>;
+  skillsChanged: { skills: Skills };
+  skillLevelUp: { skill: SkillId; level: number };
+  learningChanged: Record<string, never>;
 }
 
 export type SimEventName = keyof SimEvents;

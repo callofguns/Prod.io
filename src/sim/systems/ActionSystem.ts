@@ -1,6 +1,7 @@
 import type { Simulation, System } from '../Simulation';
 import { fail, type CommandResult } from '../core/commands';
 import { NEEDS } from '../../content/living';
+import { BRANDS } from '../../content/brands';
 import type { SleepPlan } from './ActivitySystem';
 import type { Meal } from './HomeSystem';
 
@@ -76,6 +77,15 @@ export class ActionSystem implements System {
             check: () => sim.studio.blocker(),
             run: () => {
               sim.events.emit('studioRequested', {});
+              return { ok: true };
+            },
+          },
+          study: {
+            label: 'Study',
+            detail: `Free ${BRANDS.video} tutorials or ${BRANDS.courses} courses`,
+            check: () => (sim.activity.isBusy() ? 'You are busy.' : null),
+            run: () => {
+              sim.events.emit('learnRequested', {});
               return { ok: true };
             },
           },

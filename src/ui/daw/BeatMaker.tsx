@@ -10,6 +10,8 @@ import {
 } from '../../content/music';
 import { Lcd } from '../components/Lcd';
 import { Library } from './Library';
+import { BeatReport } from '../BeatReport';
+import type { Beat } from '../../sim/core/state';
 
 type Page = 'drums' | 'bass' | 'melody' | 'library';
 const PAGES: { id: Page; name: string }[] = [
@@ -55,6 +57,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
   const [step, setStep] = useState<number | null>(null);
   const [finishing, setFinishing] = useState(false);
   const [title, setTitle] = useState('');
+  const [report, setReport] = useState<Beat | null>(null);
   const engine = useMemo(() => new BeatEngine(settings, pattern), []);
   const saveTimer = useRef<number | null>(null);
 
@@ -95,6 +98,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
   // Space plays/stops, Esc closes (or backs out of the finish dialog).
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (report) return; // the report handles its own keys
       if (e.target instanceof HTMLInputElement) {
         if (e.code === 'Escape') setFinishing(false);
         return;
@@ -318,7 +322,7 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
         </div>
       )}
 
-      {page === 'library' && <Library session={session} onUse={(beat) => {
+      {page === 'library' && <Library session={session} onReport={setReport} onUse={(beat) => {
         setSettings({ ...beat.settings });
         setPattern(structuredClone(beat.pattern));
         setPage('drums');
@@ -335,6 +339,12 @@ export function BeatMaker({ session, onClose, onFinished }: Props) {
         </p>
         <button class="key wide" disabled={!hasContent || !!blocker} onClick={() => setFinishing(true)}>Finish beat</button>
       </footer>
+
+      {report && (
+        <div class="daw-dialog-backdrop">
+          <BeatReport beat={report} onClose={() => setReport(null)} />
+        </div>
+      )}
 
       {finishing && (
         <div class="daw-dialog-backdrop">

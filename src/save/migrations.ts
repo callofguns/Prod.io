@@ -2,6 +2,9 @@ import { STATE_VERSION, type GameState } from '../sim/core/state';
 import { DEFAULT_LOOK_CHOICE } from '../content/looks';
 import { backgroundById, startingSkills } from '../content/backgrounds';
 import { CREDIT, NEEDS, STARTING_FRIDGE } from '../content/living';
+import type { BeatSettings, Pattern } from '../content/music';
+import type { Skills } from '../content/skills';
+import { rateBeat } from '../sim/quality/rateBeat';
 
 /**
  * migrations[n] upgrades a save from version n to n + 1. When GameState
@@ -54,6 +57,26 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
   },
   // v4 -> v5: the beat maker's studio (draft and finished beats).
   4: (save) => ({ ...save, studio: { draft: null, beats: [], nextBeatId: 1 } }),
+  // v5 -> v6: beat ratings, skill XP per beat, studying and courses.
+  // Beats made before ratings existed are rated with the player's current skills.
+  5: (save) => {
+    const player = save.player as { skills: Skills };
+    const studio = save.studio as { beats: Array<Record<string, unknown>> } & Record<string, unknown>;
+    const activity = save.activity as Record<string, unknown> | null;
+    return {
+      ...save,
+      studio: {
+        ...studio,
+        beats: studio.beats.map((b) => ({
+          ...b,
+          quality: rateBeat(b.settings as BeatSettings, b.pattern as Pattern, player.skills, 1),
+          xp: {},
+        })),
+      },
+      activity: activity?.kind === 'producing' ? { startProductivity: 1, ...activity } : activity,
+      learning: { courses: [] },
+    };
+  },
 };
 
 export class SaveVersionError extends Error {}
