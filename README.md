@@ -3,8 +3,8 @@
 A 2D top-down music-industry tycoon game. Start as a bedroom producer and build
 an entertainment empire in a living city.
 
-Status: **v1-beta.5**. Milestone 0 done; Milestone 1 in progress (character creation, phone and bank, needs/food/rent, beat maker, beat ratings and skills shipped). You can walk around your apartment,
-run and pause the clock, and resume from the autosave.
+Status: **v1-beta.5**. Milestones 0 and 1 done: a bedroom producer who makes beats, sells them on
+BeatHub, pays rent and levels up. Next: the city and social media (Milestone 2).
 
 Live build: https://prod-io-game.netlify.app (updated after every merge to `main`).
 

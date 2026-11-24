@@ -3,6 +3,26 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## Unreleased
+
+- BeatHub app on the phone: sell your finished beats.
+  - List beats and sell MP3, WAV, Trackout and Unlimited leases. Set store-wide prices
+    and override them per beat; higher prices sell less often.
+  - Sales come in over time, more in the evening. What sells depends on quality, genre
+    trends and tempo, price, how different your beats are from each other, freshness
+    (new uploads get pushed), store reputation and your Marketing skill.
+  - Free plan (BeatHub keeps 30%, 10 listings) or Pro ($19.99/month, keep 100%, unlimited).
+  - Paid promotion: 3, 7 or 14 days for about three times the plays.
+  - Exclusive offers from artists for your better beats (score 58+): accept, decline or
+    counter once. Your Business skill improves the odds of a counter.
+  - Store stats: plays, sales and earnings for the last 7 days, earnings per day as a
+    chart (or a table), and per-beat stats.
+  - Trends tab: genres ranked by popularity with direction and popular tempo, updated
+    every Monday, plus a weekly summary message.
+- Sale and offer notices; the beat library shows each beat's store status.
+- Debug panel: add 5 test beats, or trigger an exclusive offer.
+- Saves upgrade automatically.
+
 ## v1-beta.5
 
 The beat maker (Milestone 1, update 4) and beat ratings, skills and studying (update 5).

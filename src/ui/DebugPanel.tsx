@@ -76,6 +76,17 @@ export function DebugPanel({ session, onClose, onQuitToTitle }: Props) {
       </section>
 
       <section>
+        <p class="silk">BeatHub</p>
+        <div class="row">
+          <button class="key wide" onClick={() => {
+            const r = sim.dispatch('debugSpawnOffer', {});
+            if (!r.ok) bridge.toast(r.error, 'bad');
+          }}>Exclusive offer</button>
+          <button class="key wide" onClick={() => sim.dispatch('debugAddBeats', { count: 5 })}>Add 5 beats</button>
+        </div>
+      </section>
+
+      <section>
         <p class="silk">Save</p>
         <div class="row">
           <button

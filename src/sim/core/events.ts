@@ -1,6 +1,6 @@
 import type { Cents } from './money';
 import type { CalendarTime } from './time';
-import type { Activity, Beat, Debt, Message, NeedsState } from './state';
+import type { Activity, Beat, Debt, Message, NeedsState, Offer, Sale } from './state';
 import type { FridgeItem } from '../../content/living';
 import type { SkillId, Skills } from '../../content/skills';
 
@@ -31,6 +31,11 @@ export interface SimEvents {
   skillsChanged: { skills: Skills };
   skillLevelUp: { skill: SkillId; level: number };
   learningChanged: Record<string, never>;
+  beatSold: { sale: Sale; beatTitle: string; net: Cents };
+  offerReceived: { offer: Offer; beatTitle: string };
+  offersChanged: Record<string, never>;
+  beathubChanged: Record<string, never>;
+  trendsChanged: Record<string, never>;
 }
 
 export type SimEventName = keyof SimEvents;

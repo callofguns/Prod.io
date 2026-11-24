@@ -24,6 +24,10 @@
   --glass-line: #2a2d35;
   --glass-text: #ebe7dc;
   --glass-soft: #9a968b;
+  /* Chart marks on the phone's dark glass. Validated with the dataviz palette
+     checker (dark mode, surface #16181d): lightness band, chroma and contrast pass. */
+  --chart-accent: #cf7f1c;
+  --chart-accent-hover: #ffb347;
 
   /* Type */
   --font-display: 'Pixelify Sans', ui-monospace, monospace;

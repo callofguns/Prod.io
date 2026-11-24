@@ -1,5 +1,9 @@
 import type { Simulation, System } from '../Simulation';
 import { fail, ok } from '../core/commands';
+import { pick } from '../core/rng';
+import { GENRES, defaultSettings, type GenreId } from '../../content/music';
+import { playerPattern } from '../debug/generatePattern';
+import { rateBeat } from '../quality/rateBeat';
 
 /** Cheats for playtesting. Reachable only from the debug panel. */
 export class DebugSystem implements System {
@@ -20,6 +24,28 @@ export class DebugSystem implements System {
       const skills = sim.state.player.skills;
       for (const id of Object.keys(skills) as (keyof typeof skills)[]) skills[id] = Math.max(0, Math.min(100, skills[id] + amount));
       sim.events.emit('skillsChanged', { skills });
+      return ok;
+    });
+    sim.handle('debugAddBeats', ({ count }) => {
+      const studio = sim.state.studio;
+      const rng = sim.state.rng;
+      for (let i = 0; i < count; i++) {
+        const genre = pick(rng, Object.keys(GENRES) as GenreId[]);
+        const settings = defaultSettings(genre);
+        const pattern = playerPattern(genre, rng);
+        studio.beats.push({
+          id: studio.nextBeatId,
+          title: `Test beat ${studio.nextBeatId}`,
+          settings,
+          pattern,
+          createdAt: sim.state.clock.totalMinutes,
+          workMinutes: 0,
+          quality: rateBeat(settings, pattern, sim.state.player.skills, 1),
+          xp: {},
+        });
+        studio.nextBeatId++;
+      }
+      sim.events.emit('beathubChanged', {});
       return ok;
     });
     sim.handle('debugSkipMinutes', ({ minutes }) => {
