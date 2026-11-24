@@ -3,7 +3,7 @@
 A 2D top-down music-industry tycoon game. Start as a bedroom producer and build
 an entertainment empire in a living city.
 
-Status: **v1-beta.7** (Milestone 2 merged, not yet tagged). Milestones 0-2 done: a bedroom producer who
+Status: **v1-beta.8**. Milestones 0-2 done: a bedroom producer who
 makes beats, sells them on BeatHub, pays rent and levels up, walks Eastside and Midtown, buys gear and
 loops, and grows an InstaSnap and ViewTube audience. Plays on desktop and iPhone (landscape). Next: the
 living industry (Milestone 3).
