@@ -6,8 +6,9 @@ import { useSimEvents } from '../hooks/useSim';
 import { BankApp } from './BankApp';
 import { MessagesApp } from './MessagesApp';
 import { DashBiteApp } from './DashBiteApp';
+import { ProfileApp } from './ProfileApp';
 
-export type AppId = 'home' | 'bank' | 'messages' | 'dashbite';
+export type AppId = 'home' | 'bank' | 'messages' | 'dashbite' | 'profile';
 
 const APPS: { id: Exclude<AppId, 'home'>; name: string; glyph: ComponentChildren }[] = [
   {
@@ -19,6 +20,11 @@ const APPS: { id: Exclude<AppId, 'home'>; name: string; glyph: ComponentChildren
     id: 'dashbite',
     name: BRANDS.delivery,
     glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h16l-1.5 11h-13zM8 9V7a4 4 0 0 1 8 0v2h-2V7a2 2 0 0 0-4 0v2z" /></svg>,
+  },
+  {
+    id: 'profile',
+    name: 'Profile',
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c0-4.4 3.6-7 8-7s8 2.6 8 7z" /></svg>,
   },
   {
     id: 'messages',
@@ -74,6 +80,7 @@ export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
           )}
           {app === 'bank' && <BankApp sim={sim} onError={onError} />}
           {app === 'dashbite' && <DashBiteApp sim={sim} onError={onError} />}
+          {app === 'profile' && <ProfileApp sim={sim} />}
           {app === 'messages' && <MessagesApp sim={sim} />}
         </div>
       </div>

@@ -13,6 +13,8 @@ import { Phone, type AppId } from './phone/Phone';
 import { ActionMenu, performAction } from './ActionMenu';
 import { SleepOverlay } from './SleepOverlay';
 import { BeatMaker } from './daw/BeatMaker';
+import { LearnPanel } from './LearnPanel';
+import { BeatReport } from './BeatReport';
 import { Meter } from './components/Meter';
 
 const SPEED_KEYS: Record<string, Speed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
@@ -115,7 +117,9 @@ function Hints() {
   );
 }
 
-type Menu = 'none' | 'pause' | 'settings' | 'daw';
+type Menu = 'none' | 'pause' | 'settings' | 'daw' | 'learn' | 'report';
+/** Full-screen panels that handle their own keys. */
+const SELF_KEYED: Menu[] = ['daw', 'learn', 'report'];
 
 export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitle: () => void }) {
   const [debugOpen, setDebugOpen] = useState(false);
@@ -152,15 +156,36 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
   };
 
   useEffect(() => settings.subscribe((s) => setShowHints(s.showHints)), []);
-  useEffect(() => session.sim.events.on('studioRequested', () => {
-    setPhone(null);
-    setMenu('daw');
-  }), [session]);
+  const [reportBeatId, setReportBeatId] = useState<number | null>(null);
+  useEffect(() => {
+    const { events } = session.sim;
+    const offs = [
+      events.on('studioRequested', () => {
+        setPhone(null);
+        setMenu('daw');
+      }),
+      events.on('learnRequested', () => {
+        setPhone(null);
+        setMenu('learn');
+      }),
+      events.on('beatFinished', ({ beat }) => {
+        setReportBeatId(beat.id);
+        setMenu('report');
+      }),
+    ];
+    return () => offs.forEach((off) => off());
+  }, [session]);
+  const reportBeat = session.sim.state.studio.beats.find((b) => b.id === reportBeatId) ?? null;
+  /** Starting work from a panel runs the clock, so don't restore an earlier pause. */
+  const closeIntoWork = () => {
+    wasPaused.current = false;
+    setMenu('none');
+  };
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
-      if (menuRef.current === 'daw') return; // the beat maker handles its own keys
+      if (SELF_KEYED.includes(menuRef.current)) return; // these panels handle their own keys
       const actionsFor = session.bridge.actionsFor;
       if (actionsFor && menuRef.current === 'none') {
         if (e.code === 'Escape') {
@@ -245,15 +270,21 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
           <BeatMaker
             session={session}
             onClose={() => setMenu('none')}
-            onFinished={() => {
-              // Finishing starts the work clock, so don't restore an earlier pause.
-              wasPaused.current = false;
-              setMenu('none');
-            }}
+            onFinished={closeIntoWork}
           />
         </div>
       )}
-      {menu !== 'none' && menu !== 'daw' && (
+      {menu === 'learn' && (
+        <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu('none')}>
+          <LearnPanel session={session} onClose={() => setMenu('none')} onStarted={closeIntoWork} />
+        </div>
+      )}
+      {menu === 'report' && reportBeat && (
+        <div class="backdrop interactive">
+          <BeatReport beat={reportBeat} onClose={() => setMenu('none')} />
+        </div>
+      )}
+      {(menu === 'pause' || menu === 'settings') && (
         <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu(menu === 'settings' ? 'pause' : 'none')}>
           {menu === 'pause' && (
             <PauseMenu session={session} onResume={() => setMenu('none')} onSettings={() => setMenu('settings')} onQuit={quit} />

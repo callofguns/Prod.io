@@ -48,6 +48,10 @@ Pillars:
 | Food before the city | **[LOCKED]** A delivery app on the phone: groceries (cheap, cook at home) or takeout (instant, pricey). |
 | Going broke | **[LOCKED]** Never game over: unpaid bills become debt with late fees and interest; loans exist. |
 | Sleep | **[LOCKED]** Choose how long to sleep; the clock fast-forwards and energy refills. |
+| Beat ratings | **[LOCKED]** 0-100 score with a letter grade (S/A/B/C/D/F), a part breakdown, tips and XP gained. |
+| Pattern vs skills | **[LOCKED]** Skills first: each part is 30% pattern, 70% skill execution. |
+| Learning | **[LOCKED]** XP from finishing beats, free tutorials (capped at skill 35) and paid MasterMix courses. |
+| Trends | **[LOCKED]** Arrive with BeatHub (Milestone 1, update 6): they affect sales (appeal), not quality. |
 | World generation | **[LOCKED]** Mixed: a fixed cast of landmark NPCs/businesses plus seeded random NPCs and companies. |
 
 ## 3. Player
@@ -102,6 +106,13 @@ appeal  = f(quality, trend fit for genre/subgenre/BPM, uniqueness, producer repu
   rolls and half-time snares; drill sliding 808s and syncopated snares; R&B swing).
 - **Trend fit** compares the beat to the current market (§7.3).
 - Every beat is saved as an item with its stats, ownership and license history.
+
+**As built (Milestone 1, update 5):** the pattern is scored per part (drums, 808, melody,
+mix, genre fit) against genre conventions, e.g. trap's half-time clap on step 9 and
+hi-hat rolls, drill's 808 slides and off-beat snares, R&B swing and chords. Grooves that
+are nearly identical to a stock starter count as generic. Each part is then 30% pattern +
+70% execution from the relevant skills; the total is weighted by genre and multiplied by
+needs (energy, food, mood) and gear (starter laptop: ×0.95), with ±3 session variance.
 
 ### 4.3 Gear
 Laptop/PC tier, DAW tier, headphones, studio monitors, audio interface, microphone,

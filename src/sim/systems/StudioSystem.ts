@@ -3,6 +3,9 @@ import { fail, ok, type CommandResult } from '../core/commands';
 import type { Beat } from '../core/state';
 import { BPM_LIMITS, DRUM_LANES, GENRES, MAX_ROLL, ROLL_ROWS, SCALES, STEPS, type BeatSettings, type Pattern } from '../../content/music';
 import { PRODUCTION } from '../../content/production';
+import { VARIANCE } from '../../content/quality';
+import { nextInt } from '../core/rng';
+import { rateBeat } from '../quality/rateBeat';
 
 /** The beat maker: the working draft, finishing beats (which takes in-game time) and the beat library. */
 export class StudioSystem implements System {
@@ -55,7 +58,10 @@ export class StudioSystem implements System {
     const blocked = this.blocker();
     if (blocked) return fail(blocked);
     const now = this.sim.state.clock.totalMinutes;
-    this.sim.state.activity = { kind: 'producing', startedAt: now, until: now + this.workMinutes(), beatTitle: title };
+    this.sim.state.activity = {
+      kind: 'producing', startedAt: now, until: now + this.workMinutes(), beatTitle: title,
+      startProductivity: this.sim.needs.productivity(),
+    };
     this.sim.state.clock.paused = false;
     this.sim.events.emit('activityChanged', { activity: this.sim.state.activity });
     return ok;
@@ -65,20 +71,27 @@ export class StudioSystem implements System {
     const a = this.sim.state.activity;
     const studio = this.sim.state.studio;
     if (a?.kind !== 'producing' || !studio.draft) return;
+    const { settings, pattern } = studio.draft;
+    // Rated with the skills you had while making it, and how you felt from start to finish.
+    const productivity = (a.startProductivity + this.sim.needs.productivity()) / 2;
+    const variance = nextInt(this.sim.state.rng, -VARIANCE, VARIANCE);
+    const quality = rateBeat(settings, pattern, this.sim.state.player.skills, productivity, variance);
+    const xp = this.sim.skills.practice(pattern, settings.genre);
     const beat: Beat = {
       id: studio.nextBeatId++,
       title: a.beatTitle,
-      settings: { ...studio.draft.settings },
-      pattern: structuredClone(studio.draft.pattern),
+      settings: { ...settings },
+      pattern: structuredClone(pattern),
       createdAt: this.sim.state.clock.totalMinutes,
       workMinutes: this.sim.state.clock.totalMinutes - a.startedAt,
+      quality,
+      xp,
     };
     studio.beats.push(beat);
     studio.draft = null;
     this.sim.state.activity = null;
     this.sim.needs.change({ mood: PRODUCTION.finishMood });
     this.sim.events.emit('beatFinished', { beat });
-    this.sim.events.emit('notice', { text: `Finished "${beat.title}". It's in your beat library.`, tone: 'good' });
     this.sim.events.emit('activityChanged', { activity: null });
   }
 }

@@ -4,6 +4,7 @@ import type { Speed } from './time';
 import type { SleepPlan } from '../systems/ActivitySystem';
 import type { Meal } from '../systems/HomeSystem';
 import type { BeatSettings, Pattern } from '../../content/music';
+import type { SkillId } from '../../content/skills';
 
 /**
  * Every action the view can ask the simulation to perform. The view never
@@ -25,9 +26,13 @@ export interface SimCommands {
   saveDraft: { settings: BeatSettings; pattern: Pattern };
   discardDraft: Record<string, never>;
   finishBeat: { title: string };
+  startTutorial: { skill: SkillId };
+  buyCourse: { courseId: string };
+  startCourseSession: { courseId: string };
   debugAddCash: { amount: Cents };
   debugSkipMinutes: { minutes: number };
   debugSetNeeds: { energy?: number; food?: number; mood?: number };
+  debugBoostSkills: { amount: number };
 }
 
 export type SimCommandName = keyof SimCommands;

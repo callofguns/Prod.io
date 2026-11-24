@@ -4,6 +4,7 @@ import type { GameState } from '../sim/core/state';
 import { AutoSaver } from '../save/AutoSaver';
 import { createGame } from '../game/createGame';
 import { ViewBridge } from './ViewBridge';
+import { SKILLS } from '../content/skills';
 
 /** One running playthrough: simulation + autosave + Phaser world + view bridge. */
 export class Session {
@@ -17,6 +18,10 @@ export class Session {
     this.autosaver = new AutoSaver(this.sim, (msg) => this.bridge.toast(msg, 'bad'));
     this.bridge.onInteract = (id) => this.bridge.openActions(this.bridge.actionsFor === id ? null : id);
     this.sim.events.on('notice', ({ text, tone }) => this.bridge.toast(text, tone));
+    this.sim.events.on('skillLevelUp', ({ skill, level }) => {
+      const name = SKILLS.find((s) => s.id === skill)?.name ?? skill;
+      this.bridge.toast(`${name} is now ${level}.`, 'good');
+    });
     this.sim.events.on('messageReceived', ({ message }) => this.bridge.toast(`New message from ${message.from}. Press P to read.`));
   }
 
