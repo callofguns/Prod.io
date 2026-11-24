@@ -19,8 +19,11 @@ export function ActionMenu({ session }: { session: Session }) {
   const options = sim.actions.list(objectId);
 
   return (
-    <div class="actions chassis interactive" role="menu" aria-label={TITLES[objectId] ?? objectId}>
-      <p class="silk">{TITLES[objectId] ?? objectId}</p>
+    <div class="action-menu chassis interactive" role="menu" aria-label={TITLES[objectId] ?? objectId}>
+      <div class="action-head">
+        <p class="silk">{TITLES[objectId] ?? objectId}</p>
+        <button class="action-close" aria-label="Close" onClick={() => bridge.openActions(null)}>×</button>
+      </div>
       {options.map((o, i) => (
         <button
           key={o.id}
@@ -29,14 +32,14 @@ export function ActionMenu({ session }: { session: Session }) {
           disabled={!!o.disabled}
           onClick={() => performAction(session, objectId, o.id)}
         >
-          <span class="cap">{i + 1}</span>
+          <span class="cap key-only">{i + 1}</span>
           <span class="action-text">
             <span class="action-label">{o.label}</span>
             <span class="action-detail">{o.disabled ?? o.detail ?? ''}</span>
           </span>
         </button>
       ))}
-      <p class="action-hint"><span class="cap">Esc</span> Close</p>
+      <p class="action-hint key-only"><span class="cap">Esc</span> Close</p>
     </div>
   );
 }

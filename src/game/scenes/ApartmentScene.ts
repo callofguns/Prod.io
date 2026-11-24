@@ -7,18 +7,15 @@ import { registerApartmentArt, ROOM_H, ROOM_W, TILE, DOOR_X, DOOR_W } from '../a
 import { registerCharacter } from '../art/characterArt';
 import { darknessAt } from '../daylight';
 import { settings } from '../../app/settings';
-
-interface Rect {
-  x: number;
-  y: number;
-  w: number;
-  h: number;
-}
+import { buildNavGrid, cellPoint, findPath, isWalkable, type NavGrid, type Point, type Rect } from '../pathfinding';
 
 interface Interactable {
   id: string;
   label: string;
+  /** Where the player's feet must be to use it. */
   zone: Rect;
+  /** What you can tap on screen to walk over and use it (sprite bounds). */
+  tapAreas: Rect[];
 }
 
 export interface SceneDeps {
@@ -34,9 +31,11 @@ const START = { x: 152, y: 124 };
 /** Where the player stands after getting out of bed. */
 const BED_SIDE = { x: 34, y: 96 };
 const BOTTOM = ROOM_H - TILE;
-/** Screen space reserved for the transport bar and the control hints, in CSS px. */
-const HUD_TOP = 104;
-const HUD_BOTTOM = 40;
+/** A press that moves less than this (CSS px) and lasts less than TAP_MS counts as a tap. */
+const TAP_SLOP = 14;
+const TAP_MS = 600;
+/** Joystick dead zone. */
+const STICK_DEAD = 0.2;
 
 /** Solid parts of the room, in world pixels. Furniture uses its footprint, not its full sprite. */
 const COLLIDERS: Rect[] = [
@@ -59,11 +58,17 @@ const COLLIDERS: Rect[] = [
 const grow = (r: Rect, by: number): Rect => ({ x: r.x - by, y: r.y - by, w: r.w + by * 2, h: r.h + by * 2 });
 
 const INTERACTABLES: Interactable[] = [
-  { id: 'bed', label: 'Sleep', zone: grow({ x: 16, y: 34, w: 32, h: 44 }, 10) },
-  { id: 'computer', label: 'Use computer', zone: grow({ x: 112, y: 38, w: 64, h: 16 }, 12) },
-  { id: 'stove', label: 'Cook', zone: grow({ x: 208, y: 34, w: 40, h: 20 }, 10) },
-  { id: 'fridge', label: 'Open fridge', zone: grow({ x: 256, y: 34, w: 16, h: 20 }, 10) },
-  { id: 'door', label: 'Leave apartment', zone: { x: DOOR_X - 4, y: BOTTOM - 14, w: DOOR_W + 8, h: 20 } },
+  { id: 'bed', label: 'Sleep', zone: grow({ x: 16, y: 34, w: 32, h: 44 }, 10), tapAreas: [{ x: 16, y: 30, w: 32, h: 48 }] },
+  {
+    id: 'computer', label: 'Use computer', zone: grow({ x: 112, y: 38, w: 64, h: 16 }, 12),
+    tapAreas: [{ x: 112, y: 16, w: 64, h: 40 }, { x: 136, y: 52, w: 16, h: 20 }],
+  },
+  { id: 'stove', label: 'Cook', zone: grow({ x: 208, y: 34, w: 40, h: 20 }, 10), tapAreas: [{ x: 208, y: 20, w: 48, h: 34 }] },
+  { id: 'fridge', label: 'Open fridge', zone: grow({ x: 256, y: 34, w: 16, h: 20 }, 10), tapAreas: [{ x: 256, y: 8, w: 16, h: 46 }] },
+  {
+    id: 'door', label: 'Leave apartment', zone: { x: DOOR_X - 4, y: BOTTOM - 14, w: DOOR_W + 8, h: 20 },
+    tapAreas: [{ x: DOOR_X, y: BOTTOM - 10, w: DOOR_W, h: TILE + 10 }],
+  },
 ];
 
 const overlaps = (a: Rect, b: Rect) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
@@ -81,6 +86,11 @@ export class ApartmentScene extends Phaser.Scene {
   private walkClock = 0;
   private reportClock = 0;
   private nearby: Interactable | null = null;
+  private nav!: NavGrid;
+  /** Remaining waypoints of a tap-to-move walk, and what to use on arrival. */
+  private path: Point[] | null = null;
+  private pathTarget: Interactable | null = null;
+  private pressAt: { x: number; y: number; t: number } | null = null;
 
   constructor() {
     super('apartment');
@@ -138,6 +148,19 @@ export class ApartmentScene extends Phaser.Scene {
       const { sim } = this.deps;
       if (this.nearby && !sim.state.clock.paused && !sim.activity.isBusy()) this.deps.bridge.onInteract(this.nearby.id);
     });
+
+    // Tap (or click) the floor to walk there; tap furniture to walk over and use it.
+    this.nav = buildNavGrid(ROOM_W, ROOM_H, COLLIDERS, { w: FEET_W, h: FEET_H });
+    this.input.on('pointerdown', (p: Phaser.Input.Pointer) => {
+      this.pressAt = { x: p.x, y: p.y, t: p.downTime };
+    });
+    this.input.on('pointerup', (p: Phaser.Input.Pointer) => {
+      const press = this.pressAt;
+      this.pressAt = null;
+      const slop = TAP_SLOP / this.scale.zoom; // pointer coordinates are in device pixels
+      if (!press || Math.hypot(p.x - press.x, p.y - press.y) > slop || p.upTime - press.t > TAP_MS) return;
+      this.handleTap(p.x, p.y);
+    });
     // After sleeping in bed, get up beside it.
     const offWake = this.deps.sim.events.on('activityChanged', ({ woke }) => {
       if (!woke?.inBed) return;
@@ -153,11 +176,14 @@ export class ApartmentScene extends Phaser.Scene {
     this.fitCamera();
     this.updateLighting();
     const offSettings = settings.subscribe(() => this.fitCamera());
-    this.events.once('shutdown', () => {
+    const offLayout = this.deps.bridge.onLayout(() => this.fitCamera());
+    const cleanup = () => {
       this.scale.off('resize', this.fitCamera, this);
       offSettings();
-    });
-    this.events.once('destroy', offSettings);
+      offLayout();
+    };
+    this.events.once('shutdown', cleanup);
+    this.events.once('destroy', cleanup);
   }
 
   override update(_time: number, deltaMs: number): void {
@@ -169,7 +195,10 @@ export class ApartmentScene extends Phaser.Scene {
     this.shadow.setVisible(!asleep);
     if (sim.state.clock.paused || sim.activity.isBusy()) {
       this.setWalking(false, deltaMs);
-      if (sim.activity.isBusy()) this.deps.bridge.setPrompt(null);
+      if (sim.activity.isBusy()) {
+        this.deps.bridge.setPrompt(null);
+        this.path = null;
+      }
       return;
     }
     this.move(deltaMs);
@@ -185,18 +214,113 @@ export class ApartmentScene extends Phaser.Scene {
     const k = this.keys;
     let dx = (k.right.isDown || k.d.isDown ? 1 : 0) - (k.left.isDown || k.a.isDown ? 1 : 0);
     let dy = (k.down.isDown || k.s.isDown ? 1 : 0) - (k.up.isDown || k.w.isDown ? 1 : 0);
-    const moving = dx !== 0 || dy !== 0;
-    if (moving) {
+    let speed = 1;
+    const stick = this.deps.bridge.joystick;
+    const tilt = Math.hypot(stick.x, stick.y);
+    if (dx === 0 && dy === 0 && tilt > STICK_DEAD) {
+      dx = stick.x;
+      dy = stick.y;
+      speed = Math.min(1, 0.4 + tilt * 0.6);
+    }
+    const manual = dx !== 0 || dy !== 0;
+    if (manual) {
+      this.path = null; // steering by hand cancels a tap-to-move walk
       const len = Math.hypot(dx, dy);
       dx /= len;
       dy /= len;
-      if (Math.abs(dx) > Math.abs(dy)) this.facing = dx > 0 ? 'right' : 'left';
-      else this.facing = dy > 0 ? 'down' : 'up';
-      const step = (WALK_SPEED * deltaMs) / 1000;
+      this.face(dx, dy);
+      const step = (WALK_SPEED * speed * deltaMs) / 1000;
       this.tryMove(dx * step, 0);
       this.tryMove(0, dy * step);
+      this.setWalking(true, deltaMs);
+      return;
     }
-    this.setWalking(moving, deltaMs);
+    this.setWalking(this.followPath(deltaMs), deltaMs);
+  }
+
+  private face(dx: number, dy: number): void {
+    if (Math.abs(dx) > Math.abs(dy)) this.facing = dx > 0 ? 'right' : 'left';
+    else this.facing = dy > 0 ? 'down' : 'up';
+  }
+
+  /** Walks along the tap-to-move path. Returns whether the player moved. */
+  private followPath(deltaMs: number): boolean {
+    if (!this.path) return false;
+    let budget = (WALK_SPEED * deltaMs) / 1000;
+    while (budget > 0 && this.path.length > 0) {
+      const next = this.path[0]!;
+      const dx = next.x - this.player.x;
+      const dy = next.y - this.player.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist <= budget) {
+        this.player.setPosition(next.x, next.y);
+        this.path.shift();
+        budget -= dist;
+      } else {
+        this.face(dx, dy);
+        this.player.setPosition(this.player.x + (dx / dist) * budget, this.player.y + (dy / dist) * budget);
+        budget = 0;
+      }
+    }
+    if (this.path.length === 0) {
+      this.path = null;
+      const target = this.pathTarget;
+      this.pathTarget = null;
+      if (target && contains(target.zone, this.player.x, this.player.y)) {
+        this.updatePrompt();
+        this.deps.bridge.openActions(target.id);
+      }
+    }
+    return true;
+  }
+
+  private handleTap(screenX: number, screenY: number): void {
+    const { sim, bridge } = this.deps;
+    if (sim.state.clock.paused || sim.activity.isBusy()) return;
+    const world = this.cameras.main.getWorldPoint(screenX, screenY);
+    const target = INTERACTABLES.find((it) => it.tapAreas.some((r) => contains(r, world.x, world.y))) ?? null;
+    const here = { x: this.player.x, y: this.player.y };
+    if (target && contains(target.zone, here.x, here.y)) {
+      this.path = null;
+      bridge.openActions(target.id);
+      return;
+    }
+    const goal = target ? this.closestCellIn(target.zone) : world;
+    if (!goal) return;
+    const path = findPath(this.nav, here, goal);
+    if (!path || path.length === 0) return;
+    bridge.openActions(null);
+    this.path = path;
+    this.pathTarget = target;
+    this.showTapMarker(path[path.length - 1]!);
+  }
+
+  /** The walkable spot inside a zone nearest the player. */
+  private closestCellIn(zone: Rect): Point | null {
+    let best: Point | null = null;
+    let bestDist = Infinity;
+    for (let r = 0; r < this.nav.rows; r++) {
+      for (let c = 0; c < this.nav.cols; c++) {
+        if (!isWalkable(this.nav, c, r)) continue;
+        const p = cellPoint(this.nav, c, r);
+        if (!contains(zone, p.x, p.y)) continue;
+        const d = (p.x - this.player.x) ** 2 + (p.y - this.player.y) ** 2;
+        if (d < bestDist) {
+          bestDist = d;
+          best = p;
+        }
+      }
+    }
+    return best;
+  }
+
+  private showTapMarker(at: Point): void {
+    const ring = this.add.circle(at.x, at.y - 1, 4).setStrokeStyle(1, 0xffb347, 0.9).setDepth(9_999);
+    if (document.documentElement.dataset.motion === 'reduce') {
+      this.time.delayedCall(350, () => ring.destroy());
+      return;
+    }
+    this.tweens.add({ targets: ring, scale: 1.8, alpha: 0, duration: 380, ease: 'Quad.easeOut', onComplete: () => ring.destroy() });
   }
 
   /** Moves the player's feet box along one axis, stopping at the first collider. */
@@ -259,20 +383,39 @@ export class ApartmentScene extends Phaser.Scene {
   }
 
   /**
-   * Integer zoom keeps pixels crisp. The room sits between the HUD (top) and
-   * the control hints (bottom), centred in whatever space is left.
+   * The world renders in the space the HUD leaves free. The canvas is in
+   * device pixels, so the zoom is a whole number of device pixels per world
+   * pixel: crisp on any screen. When the room fits it's centred; otherwise
+   * (a tiny window, or a big manual zoom) the camera follows the player.
    */
   private fitCamera(): void {
+    if (!this.player) return;
+    const dpr = 1 / this.scale.zoom; // the game is displayed at 1/dpr
     const { width, height } = this.scale;
-    const available = height - HUD_TOP - HUD_BOTTOM;
-    const fit = Math.max(1, Math.floor(Math.min((width - 32) / ROOM_W, available / ROOM_H)));
-    const chosen = settings.get().zoom;
-    const zoom = chosen === 'auto' ? fit : chosen;
-    const top = HUD_TOP + Math.max(0, (available - ROOM_H * zoom) / 2);
+    const top = Math.round(this.deps.bridge.hudInsets.top * dpr);
+    const bottom = Math.round(this.deps.bridge.hudInsets.bottom * dpr);
+    const viewH = Math.max(120 * dpr, height - top - bottom);
     const cam = this.cameras.main;
+    cam.setViewport(0, top, width, viewH);
+    const margin = 8 * dpr;
+    const fit = Math.floor(Math.min((width - margin * 2) / ROOM_W, (viewH - margin) / ROOM_H));
+    const chosen = settings.get().zoom; // in CSS pixels per world pixel
+    // Never smaller than 1 CSS pixel per world pixel; follow the player if that overflows.
+    const zoom = Math.max(Math.ceil(dpr), chosen === 'auto' ? fit : Math.round(chosen * dpr));
     cam.setZoom(zoom);
-    // Screen y of world y=0 should be `top`: worldCenterY = (height / 2 - top) / zoom.
-    cam.centerOn(ROOM_W / 2, (height / 2 - top) / zoom);
     cam.setRoundPixels(true);
+    const viewW = width / zoom;
+    const viewHw = viewH / zoom;
+    if (ROOM_W <= viewW && ROOM_H <= viewHw) {
+      cam.stopFollow();
+      cam.removeBounds();
+      cam.centerOn(ROOM_W / 2, ROOM_H / 2);
+    } else {
+      // Bounds at least as big as the view keep a narrow room centred instead of pinned left.
+      const bw = Math.max(ROOM_W, viewW);
+      const bh = Math.max(ROOM_H, viewHw);
+      cam.setBounds(ROOM_W / 2 - bw / 2, ROOM_H / 2 - bh / 2, bw, bh);
+      cam.startFollow(this.player, true, 0.2, 0.2);
+    }
   }
 }

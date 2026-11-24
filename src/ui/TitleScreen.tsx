@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'preact/hooks';
-import { readSave, type SaveRecord } from '../save/SaveStore';
+import { readSave, writeSave, type SaveRecord } from '../save/SaveStore';
 import { formatMoney } from '../sim/core/money';
 import { formatClock, toCalendar } from '../sim/core/time';
 import type { GameState } from '../sim/core/state';
@@ -25,10 +25,12 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
   const [confirming, setConfirming] = useState(false);
   const [showSettings, setShowSettings] = useState(false);
 
-  useEffect(() => {
+  const reload = () =>
     readSave()
       .then((save) => setLoad({ status: 'ready', save }))
       .catch((err: unknown) => setLoad({ status: 'error', message: err instanceof Error ? err.message : String(err) }));
+  useEffect(() => {
+    void reload();
   }, []);
 
   const save = load.status === 'ready' ? load.save : null;
@@ -82,7 +84,16 @@ export function TitleScreen({ onContinue, onNewGame }: Props) {
       </main>
       {showSettings && (
         <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setShowSettings(false)}>
-          <SettingsPanel onClose={() => setShowSettings(false)} />
+          <SettingsPanel
+            onClose={() => setShowSettings(false)}
+            saveData={{
+              exportState: async () => (await readSave())?.state ?? null,
+              importState: async (state) => {
+                await writeSave(state);
+                await reload();
+              },
+            }}
+          />
         </div>
       )}
     </div>

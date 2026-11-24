@@ -23,9 +23,25 @@ export class ViewBridge {
   toasts: Toast[] = [];
   /** Set by the app: what happens when the player presses E on something. */
   onInteract: (id: string) => void = () => {};
+  /** Screen space the HUD covers (CSS px), so the world camera can avoid it. */
+  hudInsets = { top: 0, bottom: 0 };
+  /** On-screen joystick direction, each axis -1..1 (0,0 when released). Read every frame. */
+  joystick = { x: 0, y: 0 };
+  private layoutListeners = new Set<Listener>();
 
   private listeners = new Set<Listener>();
   private nextToastId = 1;
+
+  setHudInsets(top: number, bottom: number): void {
+    if (top === this.hudInsets.top && bottom === this.hudInsets.bottom) return;
+    this.hudInsets = { top, bottom };
+    this.layoutListeners.forEach((l) => l());
+  }
+
+  onLayout(listener: Listener): () => void {
+    this.layoutListeners.add(listener);
+    return () => void this.layoutListeners.delete(listener);
+  }
 
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
