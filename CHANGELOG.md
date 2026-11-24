@@ -3,7 +3,9 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
-## Unreleased
+## v1-beta.7
+
+Play on iPhone: touch controls, landscape layout and an installable offline web app.
 
 - iPhone support (landscape):
   - Tap the floor to walk there; tap furniture to walk over and use it. Also works with a
