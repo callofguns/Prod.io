@@ -1,6 +1,6 @@
 import type { Cents } from './money';
 import type { CalendarTime } from './time';
-import type { Activity, Debt, Message, NeedsState } from './state';
+import type { Activity, Beat, Debt, Message, NeedsState } from './state';
 import type { FridgeItem } from '../../content/living';
 
 /**
@@ -22,6 +22,9 @@ export interface SimEvents {
   activityChanged: { activity: Activity | null; woke?: { inBed: boolean; minutes: number } };
   fridgeChanged: { fridge: Record<FridgeItem, number> };
   debtsChanged: { debts: Debt[]; credit: number };
+  beatFinished: { beat: Beat };
+  /** The player chose "Make a beat" at the computer. */
+  studioRequested: Record<string, never>;
 }
 
 export type SimEventName = keyof SimEvents;

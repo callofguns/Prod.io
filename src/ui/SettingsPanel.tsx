@@ -51,12 +51,17 @@ export function SettingsPanel({ onClose }: { onClose: () => void }) {
         options={[{ value: 'system', name: 'Match system' }, { value: 'reduce', name: 'On' }, { value: 'full', name: 'Off' }]}
         value={s.motion} onChange={(motion) => set({ motion })} />
 
+      <p class="silk menu-group">Sound</p>
+      <Option label="Volume" hint="The beat maker and everything else you hear."
+        options={[{ value: 0, name: 'Off' }, { value: 0.25, name: '25%' }, { value: 0.5, name: '50%' }, { value: 0.8, name: '80%' }, { value: 1, name: '100%' }]}
+        value={s.volume} onChange={(volume) => set({ volume })} />
+
       <p class="silk menu-group">Gameplay</p>
       <Option label="Pause when you leave the tab" hint="Opens the pause menu if you switch windows."
         options={[{ value: true, name: 'On' }, { value: false, name: 'Off' }]}
         value={s.pauseOnBlur} onChange={(pauseOnBlur) => set({ pauseOnBlur })} />
 
-      <p class="menu-note">Sound settings arrive with the beat maker. Settings are saved in this browser.</p>
+      <p class="menu-note">Settings are saved in this browser.</p>
 
       <div class="menu-actions">
         <button class="key wide light" onClick={() => settings.reset()}>Reset to defaults</button>

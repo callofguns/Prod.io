@@ -3,6 +3,21 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## Unreleased
+
+- Beat maker: use the computer to open a 16-step groovebox.
+  - Drums page: kick, snare, clap, hi-hat (with ×2/×3/×4 rolls), open hat and perc.
+  - 808 page: a note roll in your key with slides between notes.
+  - Melody page: a note roll with chords and four instruments (keys, pluck, bell, pad).
+  - Genre (Trap, Drill, R&B, Pop), BPM, swing, key and scale; a starter groove per genre.
+  - All sounds are synthesized in the browser. Space plays and stops.
+- The clock stops while you compose. "Finish beat" takes in-game hours based on your
+  skills and needs, fast-forwards, uses extra energy and lifts your mood.
+- Library of finished beats: play them back or use one as a starting point.
+- Your work in progress is kept when you close the beat maker.
+- Volume setting.
+- Saves from v1-beta.4 upgrade automatically.
+
 ## v1-beta.4
 
 Needs, sleep, food, rent and debt (Milestone 1, update 3).

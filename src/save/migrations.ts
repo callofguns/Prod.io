@@ -52,6 +52,8 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
       activity: null,
     };
   },
+  // v4 -> v5: the beat maker's studio (draft and finished beats).
+  4: (save) => ({ ...save, studio: { draft: null, beats: [], nextBeatId: 1 } }),
 };
 
 export class SaveVersionError extends Error {}

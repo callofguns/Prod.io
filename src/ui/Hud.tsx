@@ -12,6 +12,7 @@ import { settings } from '../app/settings';
 import { Phone, type AppId } from './phone/Phone';
 import { ActionMenu, performAction } from './ActionMenu';
 import { SleepOverlay } from './SleepOverlay';
+import { BeatMaker } from './daw/BeatMaker';
 import { Meter } from './components/Meter';
 
 const SPEED_KEYS: Record<string, Speed> = { Digit1: 1, Digit2: 2, Digit3: 4 };
@@ -114,7 +115,7 @@ function Hints() {
   );
 }
 
-type Menu = 'none' | 'pause' | 'settings';
+type Menu = 'none' | 'pause' | 'settings' | 'daw';
 
 export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitle: () => void }) {
   const [debugOpen, setDebugOpen] = useState(false);
@@ -151,10 +152,15 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
   };
 
   useEffect(() => settings.subscribe((s) => setShowHints(s.showHints)), []);
+  useEffect(() => session.sim.events.on('studioRequested', () => {
+    setPhone(null);
+    setMenu('daw');
+  }), [session]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.repeat) return;
+      if (menuRef.current === 'daw') return; // the beat maker handles its own keys
       const actionsFor = session.bridge.actionsFor;
       if (actionsFor && menuRef.current === 'none') {
         if (e.code === 'Escape') {
@@ -200,6 +206,7 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
     };
     const onBlur = () => {
       if (settings.get().pauseOnBlur && menuRef.current === 'none') setMenu('pause');
+      // In the beat maker the clock is already stopped; nothing to do.
     };
     window.addEventListener('keydown', onKey);
     window.addEventListener('pointerup', onPointerUp);
@@ -233,7 +240,20 @@ export function Hud({ session, onQuitToTitle }: { session: Session; onQuitToTitl
       <SleepOverlay session={session} />
       {showHints && <Hints />}
       {debugOpen && menu === 'none' && <DebugPanel session={session} onQuitToTitle={onQuitToTitle} onClose={() => setDebugOpen(false)} />}
-      {menu !== 'none' && (
+      {menu === 'daw' && (
+        <div class="backdrop daw-backdrop interactive">
+          <BeatMaker
+            session={session}
+            onClose={() => setMenu('none')}
+            onFinished={() => {
+              // Finishing starts the work clock, so don't restore an earlier pause.
+              wasPaused.current = false;
+              setMenu('none');
+            }}
+          />
+        </div>
+      )}
+      {menu !== 'none' && menu !== 'daw' && (
         <div class="backdrop interactive" onClick={(e) => e.target === e.currentTarget && setMenu(menu === 'settings' ? 'pause' : 'none')}>
           {menu === 'pause' && (
             <PauseMenu session={session} onResume={() => setMenu('none')} onSettings={() => setMenu('settings')} onQuit={quit} />

@@ -9,9 +9,24 @@ export function SleepOverlay({ session }: { session: Session }) {
   const { sim } = session;
   useSimEvents(sim, ['minute', 'activityChanged']);
   const a = sim.state.activity;
-  if (a?.kind !== 'sleeping') return null;
+  if (!a) return null;
   const now = toCalendar(sim.state.clock.totalMinutes);
   const until = toCalendar(a.until);
+
+  if (a.kind === 'producing') {
+    const progress = Math.min(1, (sim.state.clock.totalMinutes - a.startedAt) / Math.max(1, a.until - a.startedAt));
+    return (
+      <div class="sleep producing interactive">
+        <div class="sleep-unit chassis screws">
+          <p class="silk">Finishing "{a.beatTitle}"</p>
+          <Lcd text={`${formatClock(now)} > ${formatClock(until)}`} class="sleep-lcd" label={`Working until ${formatClock(until)}`} />
+          <Meter label="Progress" value={progress * 100} low={0} />
+          <Meter label="Energy" value={sim.state.needs.energy} />
+          <p class="menu-note">Arranging, mixing and bouncing. Time is fast-forwarding.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div class="sleep interactive">

@@ -169,7 +169,7 @@ export class ApartmentScene extends Phaser.Scene {
     this.shadow.setVisible(!asleep);
     if (sim.state.clock.paused || sim.activity.isBusy()) {
       this.setWalking(false, deltaMs);
-      if (asleep) this.deps.bridge.setPrompt(null);
+      if (sim.activity.isBusy()) this.deps.bridge.setPrompt(null);
       return;
     }
     this.move(deltaMs);

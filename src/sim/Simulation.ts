@@ -12,6 +12,7 @@ import { ActivitySystem } from './systems/ActivitySystem';
 import { HomeSystem } from './systems/HomeSystem';
 import { BillsSystem } from './systems/BillsSystem';
 import { ActionSystem } from './systems/ActionSystem';
+import { StudioSystem } from './systems/StudioSystem';
 
 /** A system owns one slice of the game rules. */
 export interface System {
@@ -35,6 +36,7 @@ export class Simulation {
   readonly home: HomeSystem;
   readonly bills: BillsSystem;
   readonly actions: ActionSystem;
+  readonly studio: StudioSystem;
 
   constructor(public state: GameState) {
     this.clock = new ClockSystem(this);
@@ -46,6 +48,7 @@ export class Simulation {
     this.home = new HomeSystem(this);
     this.bills = new BillsSystem(this);
     this.actions = new ActionSystem(this);
+    this.studio = new StudioSystem(this);
     new DebugSystem(this);
   }
 

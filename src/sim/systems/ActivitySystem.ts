@@ -1,6 +1,7 @@
 import type { Simulation, System } from '../Simulation';
 import { fail, ok } from '../core/commands';
 import { NEEDS, SLEEP_TIME_SCALE } from '../../content/living';
+import { PRODUCTION } from '../../content/production';
 import { MINUTES_PER_DAY, MINUTES_PER_HOUR } from '../core/time';
 
 export type SleepPlan = { kind: 'until'; hour: number } | { kind: 'for'; minutes: number };
@@ -38,7 +39,10 @@ export class ActivitySystem implements System {
 
   /** Game minutes per real second while busy, or null to use the normal speed. */
   timeScale(): number | null {
-    return this.sim.state.activity?.kind === 'sleeping' ? SLEEP_TIME_SCALE : null;
+    const kind = this.sim.state.activity?.kind;
+    if (kind === 'sleeping') return SLEEP_TIME_SCALE;
+    if (kind === 'producing') return PRODUCTION.timeScale;
+    return null;
   }
 
   isBusy(): boolean {

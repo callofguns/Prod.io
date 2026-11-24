@@ -10,6 +10,8 @@ export interface Settings {
   showHints: boolean;
   pauseOnBlur: boolean;
   motion: MotionSetting;
+  /** Master volume for all game audio, 0-1. */
+  volume: number;
 }
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -17,6 +19,7 @@ export const DEFAULT_SETTINGS: Settings = {
   showHints: true,
   pauseOnBlur: true,
   motion: 'system',
+  volume: 0.8,
 };
 
 const KEY = 'prod-io:settings';
