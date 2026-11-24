@@ -3,6 +3,30 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
+## v1-beta.8
+
+Milestone 2: step outside. Bayport's streets, shops, transport, studio gear, loops and social media.
+
+- The city: walk out of your apartment onto Eastside, and travel to Midtown. Each district is a
+  street you walk along, with people and traffic, day and night.
+  - Kwik Mart (Eastside, 7:00-23:00): groceries cheaper than DashBite, straight into your fridge.
+  - Noise Depot (Midtown, 10:00-20:00): studio gear.
+  - Grindhouse Café (Midtown, 7:00-19:00): coffee for energy, food, an hour off for your mood.
+  - Shops close on time and send you outside.
+- Getting around: the bus ($2.75, every 15 minutes, 6:00-midnight), a Ryda from the new Maps app
+  (about $12-17, pricier in the evening, can drop you home), or a 40-minute walk.
+- Gear: computers, software, headphones, speakers, an audio interface and MIDI keyboards. Better
+  gear raises your beat scores and makes beats faster. See your setup in Profile.
+- LoopVault: a $9.99 monthly plan for credits; preview and buy loops (new ones every Monday). Put
+  one in the beat maker's new loop slot (Melody page) to lift the melody, but popular loops get
+  overused and make beats stand out less on BeatHub.
+- InstaSnap: post beat snippets, gain followers, pay to boost posts.
+- ViewTube: upload type beats tagged with an artist, gain views and subscribers, and earn ad money
+  once you reach 1,000 subscribers and 4,000 watch hours.
+- Both send buyers to your BeatHub store; BeatHub shows where recent sales came from.
+- Saves from v1-beta.7 carry over: you get starter gear, empty LoopVault, InstaSnap and ViewTube
+  accounts.
+
 ## v1-beta.7
 
 Play on iPhone: touch controls, landscape layout and an installable offline web app.
