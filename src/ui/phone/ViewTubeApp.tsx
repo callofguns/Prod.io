@@ -47,7 +47,7 @@ function Upload({ sim, beat, onDone, onError }: { sim: Simulation; beat: Beat; o
       </ul>
       <p class="app-empty">Title: {sim.social.videoTitle(beat, tag)}</p>
       <div class="loan-amounts">
-        <button class="order" onClick={() => {
+        <button data-tut="tube-upload" class="order" onClick={() => {
           const r = sim.dispatch('uploadVideo', { beatId: beat.id, tag });
           if (!r.ok) onError(r.error);
           else onDone();
@@ -100,7 +100,7 @@ export function ViewTubeApp({ sim, onError }: { sim: Simulation; onError: (msg: 
       </section>
 
       {!picking ? (
-        <button class="order wide-order" onClick={() => setPicking(true)} disabled={beats.length === 0}>
+        <button data-tut="tube-new" class="order wide-order" onClick={() => setPicking(true)} disabled={beats.length === 0}>
           {sim.state.studio.beats.length === 0 ? 'Make a beat to upload' : beats.length === 0 ? 'Every beat is uploaded' : 'Upload a type beat'}
         </button>
       ) : (
@@ -114,7 +114,7 @@ export function ViewTubeApp({ sim, onError }: { sim: Simulation; onError: (msg: 
                   <span class="row-title">{b.title}</span>
                   <span class="row-sub">{GENRES[b.settings.genre].name} · score {b.quality.score}</span>
                 </span>
-                <button class="order" onClick={() => setBeatId(b.id)}>Choose</button>
+                <button data-tut="tube-choose" class="order" onClick={() => setBeatId(b.id)}>Choose</button>
               </li>
             ))}
           </ul>

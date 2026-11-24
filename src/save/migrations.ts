@@ -89,6 +89,8 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
     const player = save.player as { background?: string };
     return { ...save, gear: emptyGear(), loops: emptyLoops(), social: emptySocial(player.background ?? 'selfTaught') };
   },
+  // v8 -> v9: the tutorial. Existing players aren't offered it (it's in the pause menu).
+  8: (save) => ({ ...save, tutorial: { status: 'off', step: 0, baseline: {} } }),
 };
 
 export class SaveVersionError extends Error {}

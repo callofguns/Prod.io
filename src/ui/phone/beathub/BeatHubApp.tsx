@@ -98,7 +98,7 @@ function StoreTab({ sim, onOpen, run }: { sim: Simulation; onOpen: (beatId: numb
                     <span class="row-title">{b.title}</span>
                     <span class="row-sub">{GENRES[b.settings.genre].name} · {b.settings.bpm} BPM · score {b.quality.score}</span>
                   </span>
-                  <button class="order" disabled={!!blocked} title={blocked ?? undefined}
+                  <button data-tut="hub-list" class="order" disabled={!!blocked} title={blocked ?? undefined}
                     onClick={() => run(sim.dispatch('listBeat', { beatId: b.id }))}>List</button>
                 </li>
               );

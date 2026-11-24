@@ -55,6 +55,7 @@ export interface SimCommands {
   postSnippet: { beatId: number };
   boostPost: { postId: number; tier: number };
   uploadVideo: { beatId: number; tag: string };
+  setTutorial: { status: 'offered' | 'active' | 'off'; step: number; baseline: Record<string, number>; finished?: boolean };
   debugSpawnOffer: Record<string, never>;
   debugAddAudience: { followers: number; subscribers: number };
   debugGoTo: { area: string };

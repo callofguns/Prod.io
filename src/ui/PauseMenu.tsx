@@ -9,9 +9,10 @@ interface Props {
   onResume: () => void;
   onSettings: () => void;
   onQuit: () => void;
+  onTutorial: () => void;
 }
 
-export function PauseMenu({ session, onResume, onSettings, onQuit }: Props) {
+export function PauseMenu({ session, onResume, onSettings, onQuit, onTutorial }: Props) {
   const { state } = session.sim;
   const t = toCalendar(state.clock.totalMinutes);
   const saved = session.autosaver.lastSavedAt;
@@ -29,6 +30,9 @@ export function PauseMenu({ session, onResume, onSettings, onQuit }: Props) {
       <div class="pause-actions">
         <button class="key wide" autoFocus onClick={onResume}>Resume <span class="cap">Esc</span></button>
         <button class="key wide light" onClick={onSettings}>Settings</button>
+        <button class="key wide light" onClick={onTutorial}>
+          {session.sim.state.tutorial.status === 'active' ? 'Restart tutorial' : 'Play the tutorial'}
+        </button>
         <button class="key wide light" onClick={onQuit}>Save and quit to title</button>
       </div>
 

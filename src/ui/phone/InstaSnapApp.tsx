@@ -74,7 +74,7 @@ export function InstaSnapApp({ sim, onError }: { sim: Simulation; onError: (msg:
       </section>
 
       {!picking ? (
-        <button class="order wide-order" onClick={() => setPicking(true)} disabled={beats.length === 0}>
+        <button data-tut="snap-new" class="order wide-order" onClick={() => setPicking(true)} disabled={beats.length === 0}>
           {beats.length === 0 ? 'Make a beat to post a snippet' : 'New snippet post'}
         </button>
       ) : (
@@ -88,7 +88,7 @@ export function InstaSnapApp({ sim, onError }: { sim: Simulation; onError: (msg:
                   <span class="row-title">{b.title}</span>
                   <span class="row-sub">score {b.quality.score}{insta.posts.some((p) => p.beatId === b.id) ? ' · posted before' : ''}</span>
                 </span>
-                <button class="order" onClick={() => { if (run(sim.dispatch('postSnippet', { beatId: b.id }))) setPicking(false); }}>Post</button>
+                <button data-tut="snap-post" class="order" onClick={() => { if (run(sim.dispatch('postSnippet', { beatId: b.id }))) setPicking(false); }}>Post</button>
               </li>
             ))}
           </ul>

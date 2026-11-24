@@ -6,6 +6,7 @@ import type { ViewBridge } from '../../app/ViewBridge';
 import { registerApartmentArt } from '../art/apartmentArt';
 import { registerCharacter } from '../art/characterArt';
 import { CAR_KEYS } from '../art/cityArt';
+import { paintCanvas } from '../art/painter';
 import { darknessAt } from '../daylight';
 import { settings } from '../../app/settings';
 import { buildNavGrid, cellPoint, findPath, isWalkable, type NavGrid, type Point, type Rect } from '../pathfinding';
@@ -69,6 +70,8 @@ export class WorldScene extends Phaser.Scene {
   private walkers: Walker[] = [];
   private carClock = 0;
   private leaving = false;
+  private arrow!: Phaser.GameObjects.Image;
+  private arrowClock = 0;
 
   constructor() {
     super('world');
@@ -111,6 +114,17 @@ export class WorldScene extends Phaser.Scene {
       this.add.sprite(npc.x, npc.y, npc.key, `${npc.facing === 'left' || npc.facing === 'right' ? 'side' : npc.facing}-0`).setOrigin(0.5, 1).setDepth(npc.y);
     }
     if (L.street) this.spawnWalkers(L.street.walkY);
+
+    // The tutorial's arrow, pointing at the thing to walk to.
+    if (!this.textures.exists('tut-arrow')) {
+      this.textures.addCanvas('tut-arrow', paintCanvas(11, 10, (p) => {
+        p.r(0, 0, 11, 4, '#1b1a22');
+        p.r(1, 1, 9, 2, '#ffb347');
+        for (let i = 0; i < 6; i++) p.r(i, 3 + i, 11 - i * 2, 1, i === 5 ? '#1b1a22' : '#1b1a22');
+        for (let i = 0; i < 5; i++) p.r(i + 1, 3 + i, 9 - i * 2, 1, '#ffb347');
+      }));
+    }
+    this.arrow = this.add.image(0, 0, 'tut-arrow').setOrigin(0.5, 1).setDepth(10_002).setVisible(false);
 
     // Night overlay and light sources.
     this.night = this.add.rectangle(0, 0, L.width, L.height, 0x141a3a).setOrigin(0, 0).setDepth(10_000).setAlpha(0);
@@ -193,6 +207,7 @@ export class WorldScene extends Phaser.Scene {
     if (this.leaving) return;
     this.updateLighting();
     this.updateStreetLife(deltaMs);
+    this.updateArrow(deltaMs);
     const away = sim.state.activity?.kind === 'sleeping' || sim.state.activity?.kind === 'traveling';
     this.player.setVisible(!away);
     this.shadow.setVisible(!away);
@@ -211,6 +226,19 @@ export class WorldScene extends Phaser.Scene {
       this.reportClock = 0;
       this.reportLocation();
     }
+  }
+
+  private updateArrow(deltaMs: number): void {
+    const id = this.deps.bridge.tutorialTarget;
+    const it = id ? this.layout.interactables.find((i) => i.id === id) : undefined;
+    const area = it?.tapAreas[0];
+    if (!area) {
+      this.arrow.setVisible(false);
+      return;
+    }
+    this.arrowClock += deltaMs;
+    const bob = reducedMotion() ? 0 : Math.round(Math.sin(this.arrowClock / 180) * 2);
+    this.arrow.setVisible(true).setPosition(Math.round(area.x + area.w / 2), Math.max(12, area.y - 2 + bob));
   }
 
   // ---------- Street life (view only, not simulated) ----------

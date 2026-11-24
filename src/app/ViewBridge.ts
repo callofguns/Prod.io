@@ -1,3 +1,4 @@
+import type { BeatSettings, Pattern } from '../content/music';
 /**
  * Shared view-only state between the Phaser world and the DOM UI: things that
  * are not part of the saved game, such as the current interaction prompt and
@@ -16,6 +17,16 @@ export interface Toast {
 
 type Listener = () => void;
 
+/** What's open on screen, reported by the UI so the tutorial can follow along. */
+export interface UiState {
+  /** Open phone app ('home' for the home screen), or null when the phone is away. */
+  phoneApp: string | null;
+  /** Full-screen panel: 'none', 'daw', 'learn', 'report', 'gear', 'pause' or 'settings'. */
+  menu: string;
+  /** The beat maker's live state while it's open. */
+  daw: { page: string; playing: boolean; settings: BeatSettings; pattern: Pattern; everPlayed: boolean } | null;
+}
+
 export class ViewBridge {
   prompt: Prompt | null = null;
   /** Object whose action menu is open (after pressing E), if any. */
@@ -28,6 +39,9 @@ export class ViewBridge {
   /** On-screen joystick direction, each axis -1..1 (0,0 when released). Read every frame. */
   joystick = { x: 0, y: 0 };
   private layoutListeners = new Set<Listener>();
+  ui: UiState = { phoneApp: null, menu: 'none', daw: null };
+  /** World object the tutorial points at with an arrow, if any. */
+  tutorialTarget: string | null = null;
 
   private listeners = new Set<Listener>();
   private nextToastId = 1;
@@ -46,6 +60,11 @@ export class ViewBridge {
   subscribe(listener: Listener): () => void {
     this.listeners.add(listener);
     return () => void this.listeners.delete(listener);
+  }
+
+  setUi(patch: Partial<UiState>): void {
+    this.ui = { ...this.ui, ...patch };
+    this.notify();
   }
 
   setPrompt(prompt: Prompt | null): void {
