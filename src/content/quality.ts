@@ -43,9 +43,6 @@ export const PART_WEIGHTS: Record<GenreId, Record<Part, number>> = {
   pop: { drums: 0.25, bass: 0.15, melody: 0.3, mix: 0.15, genre: 0.15 },
 };
 
-/** Your gear until the gear store opens in Milestone 2. Caps the score a little. */
-export const STARTER_GEAR = { name: 'Old laptop and earbuds', factor: 0.95 } as const;
-
 /** Score multiplier from productivity (0.4-1.1), clamped. */
 export const needsFactor = (productivity: number) => Math.max(0.88, Math.min(1.02, 0.8 + 0.2 * productivity));
 

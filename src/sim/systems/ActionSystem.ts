@@ -1,9 +1,27 @@
 import type { Simulation, System } from '../Simulation';
 import { fail, type CommandResult } from '../core/commands';
+import { formatMoney } from '../core/money';
+import { AREAS, DISTRICTS, DOORS, TRANSIT, type DistrictId } from '../../content/city';
 import { NEEDS } from '../../content/living';
 import { BRANDS } from '../../content/brands';
 import type { SleepPlan } from './ActivitySystem';
 import type { Meal } from './HomeSystem';
+
+const TITLES: Record<string, string> = {
+  bed: 'Bed',
+  fridge: 'Fridge',
+  stove: 'Stove',
+  computer: 'Computer',
+  door: 'Front door',
+  exit: 'Door',
+  homeDoor: 'Your building',
+  busStop: 'Bus stop',
+  toMidtown: 'Road to Midtown',
+  toEastside: 'Road to Eastside',
+  groceryCounter: 'Checkout',
+  cafeCounter: 'Counter',
+  gearCounter: 'Sales counter',
+};
 
 export interface ActionOption {
   id: string;
@@ -47,6 +65,7 @@ export class ActionSystem implements System {
   private defs(objectId: string): Record<string, Def> {
     const sim = this.sim;
     const fridge = sim.state.home.fridge;
+    const free = () => (sim.activity.isBusy() ? 'You are busy.' : null);
     const awake = () => (sim.state.needs.energy >= NEEDS.wideAwake ? "You're wide awake." : null);
     const sleep = (plan: SleepPlan): Def['run'] => () => sim.dispatch('startSleep', { plan });
     const meal = (m: Meal): Pick<Def, 'check' | 'run'> => ({ check: () => sim.home.blocker(m), run: () => sim.dispatch('eat', { meal: m }) });
@@ -91,9 +110,79 @@ export class ActionSystem implements System {
           },
         };
       case 'door':
-        return { leave: { label: 'Leave the apartment', check: () => 'The city opens in Milestone 2.', run: () => fail('Not yet') } };
+        return { leave: { label: 'Go outside', detail: `${DISTRICTS.eastside.name} street`, check: free, run: () => sim.city.leave() } };
+      case 'exit':
+        return { leave: { label: 'Go outside', check: free, run: () => sim.city.leave() } };
+      case 'homeDoor':
+        return { enter: { label: 'Go home', detail: 'Your studio apartment', check: free, run: () => sim.city.enter('apartment') } };
+      case 'groceryDoor':
+      case 'gearStoreDoor':
+      case 'cafeDoor': {
+        const area = DOORS[objectId]!;
+        return {
+          enter: {
+            label: `Go into ${AREAS[area].name}`,
+            detail: `Open ${sim.city.hoursLabel(area)}`,
+            check: () => free() ?? sim.city.enterBlocker(area),
+            run: () => sim.city.enter(area),
+          },
+        };
+      }
+      case 'busStop': {
+        const to: DistrictId = sim.city.district() === 'eastside' ? 'midtown' : 'eastside';
+        const q = sim.city.quote(to, 'bus');
+        return {
+          bus: {
+            label: `Take the bus to ${DISTRICTS[to].name}`,
+            detail: 'error' in q ? undefined : `${formatMoney(q.price)} · next bus in ${sim.city.nextBus()} min · about ${q.minutes} min total`,
+            check: () => ('error' in q ? q.error : null),
+            run: () => sim.dispatch('travel', { to, mode: 'bus' }),
+          },
+        };
+      }
+      case 'toMidtown':
+      case 'toEastside': {
+        const to: DistrictId = objectId === 'toMidtown' ? 'midtown' : 'eastside';
+        return {
+          walk: {
+            label: `Walk to ${DISTRICTS[to].name}`,
+            detail: `${TRANSIT.walk.minutes} min · free · a little tiring`,
+            check: () => free() ?? (sim.state.needs.energy < 10 ? 'Too tired to walk that far.' : null),
+            run: () => sim.dispatch('travel', { to, mode: 'walk' }),
+          },
+        };
+      }
+      case 'groceryCounter':
+      case 'cafeCounter': {
+        const shop = objectId === 'groceryCounter' ? 'grocery' : 'cafe';
+        return Object.fromEntries(sim.city.items(shop).map((item) => [item.id, {
+          label: `${item.name} · ${formatMoney(item.price)}`,
+          detail: item.detail,
+          check: () => free() ?? (sim.state.player.cash < item.price ? 'Not enough money.' : null),
+          run: () => sim.dispatch('buyShopItem', { shop, itemId: item.id }),
+        }]));
+      }
+      case 'gearCounter':
+        return {
+          browse: {
+            label: 'Browse gear',
+            detail: 'Computers, headphones, speakers, keyboards',
+            check: free,
+            run: () => {
+              sim.events.emit('shopRequested', { shop: 'gear' });
+              return { ok: true };
+            },
+          },
+        };
       default:
         return {};
     }
+  }
+
+  /** Display name for an object's menu. */
+  title(objectId: string): string {
+    const area = DOORS[objectId];
+    if (area) return AREAS[area].name;
+    return TITLES[objectId] ?? objectId;
   }
 }

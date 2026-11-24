@@ -6,6 +6,8 @@ import type { Meal } from '../systems/HomeSystem';
 import type { BeatSettings, Pattern } from '../../content/music';
 import type { SkillId } from '../../content/skills';
 import type { LeaseTier } from '../../content/beathub';
+import type { TravelMode } from '../../content/city';
+import type { Destination, Shop } from '../systems/CitySystem';
 
 /**
  * Every action the view can ask the simulation to perform. The view never
@@ -42,7 +44,20 @@ export interface SimCommands {
   acceptOffer: { offerId: number };
   declineOffer: { offerId: number };
   counterOffer: { offerId: number; raise: number };
+  travel: { to: Destination; mode: TravelMode };
+  buyShopItem: { shop: Shop; itemId: string };
+  buyGear: { itemId: string };
+  subscribeLoops: Record<string, never>;
+  cancelLoops: Record<string, never>;
+  resumeLoops: Record<string, never>;
+  buyCredits: Record<string, never>;
+  buyLoop: { loopId: string };
+  postSnippet: { beatId: number };
+  boostPost: { postId: number; tier: number };
+  uploadVideo: { beatId: number; tag: string };
   debugSpawnOffer: Record<string, never>;
+  debugAddAudience: { followers: number; subscribers: number };
+  debugGoTo: { area: string };
   debugAddBeats: { count: number };
   debugAddCash: { amount: Cents };
   debugSkipMinutes: { minutes: number };

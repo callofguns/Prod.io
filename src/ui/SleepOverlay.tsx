@@ -44,6 +44,19 @@ export function SleepOverlay({ session }: { session: Session }) {
     );
   }
 
+  if (a.kind === 'traveling') {
+    const progress = Math.min(1, (sim.state.clock.totalMinutes - a.startedAt) / Math.max(1, a.until - a.startedAt));
+    return (
+      <div class="sleep producing interactive">
+        <div class="sleep-unit chassis screws">
+          <p class="silk">{a.label}</p>
+          <Lcd text={`${formatClock(now)} > ${formatClock(until)}`} class="sleep-lcd" label={`Arriving at ${formatClock(until)}`} />
+          <Meter label="Trip" value={progress * 100} low={0} />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div class="sleep interactive">
       <div class="sleep-unit chassis screws">

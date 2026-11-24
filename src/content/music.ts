@@ -55,8 +55,10 @@ export interface Pattern {
   /** Scale degrees played on each step (chords allowed). */
   melody: number[][];
   instrument: InstrumentId;
-  /** Lane volumes, 0-1. */
-  levels: { drums: number; bass: number; melody: number };
+  /** Lane volumes, 0-1 (loop is optional for beats made before LoopVault). */
+  levels: { drums: number; bass: number; melody: number; loop?: number };
+  /** A LoopVault loop layered over the beat, if any. */
+  loopId?: string | null;
 }
 
 export interface BeatSettings {

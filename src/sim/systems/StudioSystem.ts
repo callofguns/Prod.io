@@ -15,6 +15,7 @@ export class StudioSystem implements System {
     sim.handle('saveDraft', ({ settings, pattern }) => {
       const problem = validate(settings, pattern);
       if (problem) return fail(problem);
+      if (pattern.loopId && !sim.loops.owns(pattern.loopId)) return fail('You do not own that loop.');
       sim.state.studio.draft = { settings: { ...settings }, pattern: structuredClone(pattern) };
       return ok;
     });
@@ -39,7 +40,7 @@ export class StudioSystem implements System {
   workMinutes(): number {
     const sk = this.sim.state.player.skills;
     const avg = (sk.drums + sk.melody + sk.mixing) / 3;
-    const raw = (PRODUCTION.baseMinutes * (1.2 - (avg / 100) * 0.7)) / this.sim.needs.productivity();
+    const raw = (PRODUCTION.baseMinutes * (1.2 - (avg / 100) * 0.7) * this.sim.gear.speedFactor()) / this.sim.needs.productivity();
     return Math.round(raw / 5) * 5;
   }
 
@@ -75,7 +76,7 @@ export class StudioSystem implements System {
     // Rated with the skills you had while making it, and how you felt from start to finish.
     const productivity = (a.startProductivity + this.sim.needs.productivity()) / 2;
     const variance = nextInt(this.sim.state.rng, -VARIANCE, VARIANCE);
-    const quality = rateBeat(settings, pattern, this.sim.state.player.skills, productivity, variance);
+    const quality = rateBeat(settings, pattern, this.sim.state.player.skills, productivity, variance, this.sim.gear.qualityFactor());
     const xp = this.sim.skills.practice(pattern, settings.genre);
     const beat: Beat = {
       id: studio.nextBeatId++,

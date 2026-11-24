@@ -3,7 +3,7 @@ import { fail, ok, type CommandResult } from '../core/commands';
 import { formatMoney, type Cents } from '../core/money';
 import { nextFloat, nextInt, pick } from '../core/rng';
 import { MINUTES_PER_DAY, toCalendar, type CalendarTime } from '../core/time';
-import type { Beat, DayStat, Listing, Offer } from '../core/state';
+import type { Beat, DayStat, Listing, Offer, Sale } from '../core/state';
 import { BRANDS } from '../../content/brands';
 import { GENRES } from '../../content/music';
 import {
@@ -11,6 +11,8 @@ import {
   SALES_LIMIT, SINGER_FIRST, SINGER_LAST, SKILL_XP, type LeaseTier,
 } from '../../content/beathub';
 import { beatSimilarity, starterSimilarity } from '../quality/analyzePattern';
+import { LOOP_RATING } from '../../content/loops';
+import type { Source } from './SocialSystem';
 
 const round25 = (c: Cents) => Math.round(c / 2500) * 2500;
 
@@ -165,6 +167,27 @@ export class BeatHubSystem implements System {
     return mine >= ref * 1.4 ? 'High' : mine >= ref * 0.7 ? 'Medium' : 'Low';
   }
 
+  /**
+   * Listeners arriving from a social link. They land on the linked beat if
+   * it's listed (otherwise a random listed beat) and buy at its usual rate.
+   */
+  externalVisits(beatId: number, visits: number, via: Source): void {
+    const actives = this.active();
+    if (visits <= 0 || actives.length === 0) return;
+    const rng = this.sim.state.rng;
+    const time = toCalendar(this.sim.state.clock.totalMinutes);
+    const stat = this.today(time.day);
+    for (let i = 0; i < visits; i++) {
+      const l = this.listing(beatId)?.status === 'listed' ? this.listing(beatId)! : pick(rng, actives);
+      const beat = this.beat(l.beatId)!;
+      l.plays += 1;
+      stat.plays += 1;
+      const tiers = this.tierFactors(l, beat.quality.score);
+      const priceAppeal = Math.min(2, LEASE_TIERS.reduce((s, t) => s + tiers[t], 0));
+      if (nextFloat(rng) < DEMAND.conversion(beat.quality.score) * priceAppeal) this.sellLease(l, beat, time, via);
+    }
+  }
+
   // ---------- Listing ----------
 
   private list(beatId: number): CommandResult {
@@ -248,12 +271,18 @@ export class BeatHubSystem implements System {
       const actives = this.active().map((l) => this.beat(l.beatId)!);
       this.uniqueness = new Map(actives.map((b) => {
         let max = starterSimilarity(b.pattern);
-        for (const other of actives) if (other.id !== b.id) max = Math.max(max, beatSimilarity(b.pattern, other.pattern));
+        for (const other of actives) {
+          if (other.id === b.id) continue;
+          max = Math.max(max, beatSimilarity(b.pattern, other.pattern));
+          // Two beats built on the same LoopVault loop sound alike.
+          if (b.pattern.loopId && b.pattern.loopId === other.pattern.loopId) max = Math.max(max, 0.75);
+        }
         const penalty = Math.max(0, Math.min(1, (max - 0.4) / 0.6));
         return [b.id, 1 - (1 - DEMAND.uniquenessFloor) * penalty];
       }));
     }
-    return this.uniqueness.get(beatId) ?? 1;
+    const loopWear = 1 - LOOP_RATING.overusePenalty * this.sim.loops.overuse(this.beat(beatId)?.pattern.loopId);
+    return (this.uniqueness.get(beatId) ?? 1) * loopWear;
   }
 
   private qualityFactor(score: number): number {
@@ -305,7 +334,7 @@ export class BeatHubSystem implements System {
       entries.forEach((e) => (e.w = this.weight(e.l, e.beat, now)));
       const total = entries.reduce((s, e) => s + e.w, 0);
       if (total > 0) {
-        const marketing = DEMAND.marketing(this.sim.state.player.skills.marketing);
+        const marketing = DEMAND.marketing(this.sim.state.player.skills.marketing) * this.sim.social.storeBoost();
         const daily = DEMAND.base * Math.pow(total, DEMAND.catalogExponent) * this.reputation() * marketing;
         const hourFactor = DEMAND.hourWeight(time.hour) / 24;
         const stat = this.today(time.day);
@@ -332,7 +361,7 @@ export class BeatHubSystem implements System {
     return `${pick(rng, SINGER_FIRST)} ${pick(rng, SINGER_LAST)}`;
   }
 
-  private sellLease(listing: Listing, beat: Beat, time: CalendarTime): void {
+  private sellLease(listing: Listing, beat: Beat, time: CalendarTime, via?: Source): void {
     const rng = this.sim.state.rng;
     const tiers = this.tierFactors(listing, beat.quality.score);
     const sum = LEASE_TIERS.reduce((s, t) => s + tiers[t], 0);
@@ -340,16 +369,16 @@ export class BeatHubSystem implements System {
     const tier = LEASE_TIERS.find((t) => (roll -= tiers[t]) < 0) ?? 'mp3';
     const gross = this.price(listing, tier);
     const buyer = this.buyerFor(beat);
-    this.recordSale(listing, beat, tier, buyer, gross, time.day);
+    this.recordSale(listing, beat, tier, buyer, gross, time.day, via);
     this.store.leaseSales += 1;
   }
 
-  private recordSale(listing: Listing, beat: Beat, tier: LeaseTier | 'exclusive', buyer: string, gross: Cents, day: number): void {
+  private recordSale(listing: Listing, beat: Beat, tier: LeaseTier | 'exclusive', buyer: string, gross: Cents, day: number, via?: Source): void {
     const fee = Math.round(gross * this.plan().fee);
     const net = gross - fee;
     const name = tier === 'exclusive' ? 'Exclusive rights' : LEASES[tier].name;
     this.sim.economy.record(net, `${BRANDS.beatStore}: ${name} · ${beat.title}${fee ? ` (after ${formatMoney(fee)} fee)` : ''}`, 'income');
-    const sale = { id: this.store.nextSaleId++, minute: this.sim.state.clock.totalMinutes, beatId: beat.id, tier, buyer, gross, fee };
+    const sale: Sale = { id: this.store.nextSaleId++, minute: this.sim.state.clock.totalMinutes, beatId: beat.id, tier, buyer, gross, fee, ...(via ? { via } : {}) };
     this.store.sales.push(sale);
     if (this.store.sales.length > SALES_LIMIT) this.store.sales.shift();
     listing.sales += 1;

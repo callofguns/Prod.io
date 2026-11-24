@@ -10,6 +10,9 @@ import { initialTrends, type TrendState } from '../trends';
 import { startingMessages } from '../../content/startingMessages';
 import { CREDIT, NEEDS, STARTING_FRIDGE, type FridgeItem } from '../../content/living';
 import type { BeatSettings, Pattern } from '../../content/music';
+import { STARTER_GEAR_IDS } from '../../content/gear';
+import { INSTASNAP } from '../../content/social';
+import type { DistrictId, TravelMode } from '../../content/city';
 
 /**
  * The entire saveable game. Plain data only (no class instances or functions)
@@ -35,6 +38,89 @@ export interface GameState {
   learning: LearningState;
   beathub: BeatHubState;
   trends: TrendState;
+  gear: GearState;
+  loops: LoopState;
+  social: SocialState;
+}
+
+export interface GearState {
+  /** Item ids you own (starter gear included). The best item per slot is the one you use. */
+  owned: string[];
+}
+
+export interface LoopState {
+  subscribed: boolean;
+  renewsAt: number | null;
+  cancelled: boolean;
+  credits: number;
+  /** Loop ids you bought (yours to keep, even after cancelling). */
+  owned: string[];
+}
+
+export interface SocialPost {
+  id: number;
+  beatId: number;
+  at: number;
+  /** Totals this post will reach, fixed when posted; counters below fill in over time. */
+  target: { reach: number; likes: number; follows: number; clicks: number };
+  reach: number;
+  likes: number;
+  follows: number;
+  clicks: number;
+  /** The current (or last) paid boost and how much of it has been delivered. */
+  boost: { reach: number; follows: number; clicks: number; from: number; until: number } | null;
+  boostDone: { reach: number; follows: number; clicks: number };
+  /** All boosts so far: money spent, and reach from boosts that already finished. */
+  paid: { spent: Cents; reach: number };
+}
+
+export interface Video {
+  id: number;
+  beatId: number;
+  title: string;
+  tag: string;
+  at: number;
+  viral: boolean;
+  target: { views: number; likes: number; subs: number; clicks: number };
+  views: number;
+  likes: number;
+  subs: number;
+  clicks: number;
+  comment: string;
+}
+
+export interface SocialState {
+  insta: { followers: number; posts: SocialPost[]; nextPostId: number };
+  tube: {
+    subscribers: number;
+    videos: Video[];
+    nextVideoId: number;
+    totalViews: number;
+    watchMinutes: number;
+    partner: 'none' | 'review' | 'approved';
+    partnerAt: number | null;
+    /** Ad earnings not paid out yet, in fractional cents. */
+    unpaid: number;
+    paidTotal: Cents;
+  };
+}
+
+export function emptyGear(): GearState {
+  return { owned: [...STARTER_GEAR_IDS] };
+}
+
+export function emptyLoops(): LoopState {
+  return { subscribed: false, renewsAt: null, cancelled: false, credits: 0, owned: [] };
+}
+
+export function emptySocial(background: string): SocialState {
+  return {
+    insta: { followers: INSTASNAP.startFollowers[background] ?? 60, posts: [], nextPostId: 1 },
+    tube: {
+      subscribers: 0, videos: [], nextVideoId: 1, totalViews: 0, watchMinutes: 0,
+      partner: 'none', partnerAt: null, unpaid: 0, paidTotal: 0,
+    },
+  };
 }
 
 export interface Listing {
@@ -59,6 +145,8 @@ export interface Sale {
   buyer: string;
   gross: Cents;
   fee: Cents;
+  /** Where the buyer came from, when it wasn't the store itself. */
+  via?: 'instasnap' | 'viewtube';
 }
 
 export type OfferStatus = 'open' | 'countered' | 'accepted' | 'declined' | 'expired' | 'passed' | 'closed';
@@ -166,12 +254,13 @@ export interface HomeState {
 export type Activity =
   | { kind: 'sleeping'; startedAt: number; until: number; inBed: boolean }
   | { kind: 'producing'; startedAt: number; until: number; beatTitle: string; startProductivity: number }
-  | { kind: 'studying'; startedAt: number; until: number; skill: SkillId; courseId: string | null; label: string };
+  | { kind: 'studying'; startedAt: number; until: number; skill: SkillId; courseId: string | null; label: string }
+  | { kind: 'traveling'; startedAt: number; until: number; mode: TravelMode; to: DistrictId | 'home'; label: string };
 
 export type Debt = StartingDebt;
 
 export type TransactionCategory =
-  | 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'education' | 'marketing' | 'subscription' | 'other';
+  | 'opening' | 'debug' | 'rent' | 'food' | 'loan' | 'fees' | 'income' | 'education' | 'marketing' | 'subscription' | 'transport' | 'gear' | 'other';
 
 export interface Transaction {
   id: number;
@@ -217,12 +306,13 @@ export interface PlayerState {
   look: LookChoice;
   skills: Skills;
   cash: Cents;
-  location: { area: string; x: number; y: number; facing: Facing };
+  /** x/y of -1 means "use the named spawn point" (or the area's default). */
+  location: { area: string; x: number; y: number; facing: Facing; spawn?: string };
 }
 
 export type Facing = 'up' | 'down' | 'left' | 'right';
 
-export const STATE_VERSION = 7;
+export const STATE_VERSION = 8;
 
 /** Choices made on the character creation screen. */
 export interface NewGameSetup {
@@ -276,5 +366,8 @@ export function createNewGameState(seed: number, setup: NewGameSetup = DEFAULT_S
     learning: { courses: [] },
     beathub: emptyBeatHub(),
     trends,
+    gear: emptyGear(),
+    loops: emptyLoops(),
+    social: emptySocial(bg.id),
   };
 }

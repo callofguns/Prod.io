@@ -3,6 +3,7 @@ import { fail, ok } from '../core/commands';
 import { NEEDS, SLEEP_TIME_SCALE } from '../../content/living';
 import { PRODUCTION } from '../../content/production';
 import { STUDY_TIME_SCALE } from '../../content/learning';
+import { TRAVEL_TIME_SCALE } from '../../content/city';
 import { MINUTES_PER_DAY, MINUTES_PER_HOUR } from '../core/time';
 
 export type SleepPlan = { kind: 'until'; hour: number } | { kind: 'for'; minutes: number };
@@ -44,6 +45,7 @@ export class ActivitySystem implements System {
     if (kind === 'sleeping') return SLEEP_TIME_SCALE;
     if (kind === 'producing') return PRODUCTION.timeScale;
     if (kind === 'studying') return STUDY_TIME_SCALE;
+    if (kind === 'traveling') return TRAVEL_TIME_SCALE;
     return null;
   }
 

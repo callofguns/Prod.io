@@ -16,6 +16,10 @@ import { StudioSystem } from './systems/StudioSystem';
 import { SkillSystem } from './systems/SkillSystem';
 import { TrendSystem } from './systems/TrendSystem';
 import { BeatHubSystem } from './systems/BeatHubSystem';
+import { CitySystem } from './systems/CitySystem';
+import { GearSystem } from './systems/GearSystem';
+import { LoopSystem } from './systems/LoopSystem';
+import { SocialSystem } from './systems/SocialSystem';
 
 /** A system owns one slice of the game rules. */
 export interface System {
@@ -43,6 +47,10 @@ export class Simulation {
   readonly skills: SkillSystem;
   readonly trends: TrendSystem;
   readonly beathub: BeatHubSystem;
+  readonly city: CitySystem;
+  readonly gear: GearSystem;
+  readonly loops: LoopSystem;
+  readonly social: SocialSystem;
 
   constructor(public state: GameState) {
     this.clock = new ClockSystem(this);
@@ -58,6 +66,10 @@ export class Simulation {
     this.skills = new SkillSystem(this);
     this.trends = new TrendSystem(this);
     this.beathub = new BeatHubSystem(this);
+    this.city = new CitySystem(this);
+    this.gear = new GearSystem(this);
+    this.loops = new LoopSystem(this);
+    this.social = new SocialSystem(this);
     new DebugSystem(this);
   }
 
