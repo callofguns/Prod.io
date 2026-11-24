@@ -3,7 +3,9 @@
 Each release is a git tag on `main`. Versions follow `v<major>-beta.<n>` during
 the beta, then semantic versioning (`v1.0.0`, `v1.1.0`, ...) from the first full release.
 
-## Unreleased
+## v1-beta.6
+
+BeatHub selling (Milestone 1, update 6). Milestone 1, Bedroom Producer, is complete.
 
 - BeatHub app on the phone: sell your finished beats.
   - List beats and sell MP3, WAV, Trackout and Unlimited leases. Set store-wide prices
