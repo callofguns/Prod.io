@@ -27,7 +27,8 @@ export class Session {
     });
     this.sim.events.on('beatSold', ({ sale, beatTitle, net }) => {
       const what = sale.tier === 'exclusive' ? 'Exclusive rights' : LEASES[sale.tier].name;
-      this.bridge.toast(`${BRANDS.beatStore}: ${what} of "${beatTitle}" sold to ${sale.buyer} (+${formatMoney(net)})`, 'good');
+      const via = sale.via === 'viewtube' ? ` via ${BRANDS.video}` : sale.via === 'instasnap' ? ` via ${BRANDS.social}` : '';
+      this.bridge.toast(`${BRANDS.beatStore}: ${what} of "${beatTitle}" sold to ${sale.buyer}${via} (+${formatMoney(net)})`, 'good');
     });
     this.sim.events.on('offerReceived', ({ offer, beatTitle }) => {
       this.bridge.toast(`Exclusive offer: ${formatMoney(offer.amount)} for "${beatTitle}". Open ${BRANDS.beatStore} to answer.`, 'good');

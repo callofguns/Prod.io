@@ -36,6 +36,13 @@ export interface SimEvents {
   offersChanged: Record<string, never>;
   beathubChanged: Record<string, never>;
   trendsChanged: Record<string, never>;
+  /** The player moved to another area (the view loads that scene). */
+  areaChanged: { area: string; spawn: string };
+  gearChanged: Record<string, never>;
+  loopsChanged: Record<string, never>;
+  socialChanged: Record<string, never>;
+  /** The player chose a shop counter that opens a full catalog (gear store). */
+  shopRequested: { shop: 'gear' };
 }
 
 export type SimEventName = keyof SimEvents;

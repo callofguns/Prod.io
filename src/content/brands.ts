@@ -16,4 +16,11 @@ export const BRANDS = {
   delivery: 'DashBite',
   studentLoans: 'Nelnext Loan Services',
   courses: 'MasterMix',
+  rideshare: 'Ryda',
+  transit: 'Bayport Transit',
+  maps: 'Maps',
+  gearStore: 'Noise Depot',
+  grocery: 'Kwik Mart',
+  cafe: 'Grindhouse Café',
+  daw: 'FruityBox',
 } as const;

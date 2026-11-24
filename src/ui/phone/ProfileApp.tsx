@@ -4,10 +4,13 @@ import { courseById } from '../../content/learning';
 import { SKILLS } from '../../content/skills';
 import { gradeFor } from '../../content/quality';
 import { useSimEvents } from '../hooks/useSim';
+import { BRANDS } from '../../content/brands';
+import { GEAR_SLOTS, GEAR_SLOT_NAMES } from '../../content/gear';
 
 /** Who you are: background, skills (with progress to the next level) and courses. */
 export function ProfileApp({ sim }: { sim: Simulation }) {
-  useSimEvents(sim, ['skillsChanged', 'learningChanged', 'beatFinished']);
+  useSimEvents(sim, ['skillsChanged', 'learningChanged', 'beatFinished', 'gearChanged', 'socialChanged']);
+  const setup = sim.gear.setup();
   const { player, learning, studio } = sim.state;
   const best = studio.beats.reduce<number | null>((m, b) => (m === null || b.quality.score > m ? b.quality.score : m), null);
 
@@ -20,6 +23,30 @@ export function ProfileApp({ sim }: { sim: Simulation }) {
           {player.name} · {studio.beats.length} beat{studio.beats.length === 1 ? '' : 's'} made
           {best !== null && ` · best ${best} (${gradeFor(best).grade})`}
         </p>
+      </section>
+
+      <section>
+        <h3 class="app-heading">Audience</h3>
+        <p class="fridge-line">
+          <span><strong>{sim.state.social.insta.followers.toLocaleString('en-US')}</strong> {BRANDS.social} followers</span>
+          <span><strong>{sim.state.social.tube.subscribers.toLocaleString('en-US')}</strong> {BRANDS.video} subscribers</span>
+        </p>
+      </section>
+
+      <section>
+        <h3 class="app-heading">Studio gear · quality ×{sim.gear.qualityFactor().toFixed(3)} · {Math.round(sim.gear.speedFactor() * 100)}% time</h3>
+        <ul class="rows">
+          {GEAR_SLOTS.map((slot) => {
+            const item = setup[slot];
+            return (
+              <li key={slot} class="row">
+                <span class="row-main"><span class="row-title">{item ? item.name : '—'}</span></span>
+                <span class="row-time">{GEAR_SLOT_NAMES[slot]}</span>
+              </li>
+            );
+          })}
+        </ul>
+        <p class="app-empty">Better gear is sold at {BRANDS.gearStore} in Midtown.</p>
       </section>
 
       <section>

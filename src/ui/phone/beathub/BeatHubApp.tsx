@@ -6,6 +6,7 @@ import { MINUTES_PER_DAY, formatClock, toCalendar } from '../../../sim/core/time
 import { EXCLUSIVES, LEASES, LEASE_TIERS, PLANS, PROMOTIONS } from '../../../content/beathub';
 import { GENRES, keyLabel } from '../../../content/music';
 import { useSimEvents } from '../../hooks/useSim';
+import { BRANDS } from '../../../content/brands';
 import { RevenueChart } from './RevenueChart';
 import { PriceStepper } from './PriceStepper';
 
@@ -106,6 +107,26 @@ function StoreTab({ sim, onOpen, run }: { sim: Simulation; onOpen: (beatId: numb
         )}
         {active.length >= plan.maxListings && <p class="app-empty">The Free plan lists up to {PLANS.free.maxListings} beats. Unlist one, or go Pro under Account.</p>}
       </section>
+
+      {store.sales.length > 0 && (
+        <section>
+          <h3 class="app-heading">Recent sales</h3>
+          <ul class="rows">
+            {[...store.sales].reverse().slice(0, 5).map((sale) => (
+              <li key={sale.id} class="row">
+                <span class="row-main">
+                  <span class="row-title">{hub.beat(sale.beatId)?.title ?? 'Beat'}</span>
+                  <span class="row-sub">
+                    {sale.tier === 'exclusive' ? 'Exclusive' : LEASES[sale.tier].name} · {sale.buyer}
+                    {sale.via === 'viewtube' ? ` · via ${BRANDS.video}` : sale.via === 'instasnap' ? ` · via ${BRANDS.social}` : ''}
+                  </span>
+                </span>
+                <span class="row-amount in">{formatMoney(sale.gross - sale.fee)}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
 
       {sold.length > 0 && (
         <section>

@@ -8,14 +8,38 @@ import { MessagesApp } from './MessagesApp';
 import { DashBiteApp } from './DashBiteApp';
 import { ProfileApp } from './ProfileApp';
 import { BeatHubApp } from './beathub/BeatHubApp';
+import { InstaSnapApp } from './InstaSnapApp';
+import { ViewTubeApp } from './ViewTubeApp';
+import { LoopVaultApp } from './LoopVaultApp';
+import { MapsApp } from './MapsApp';
 
-export type AppId = 'home' | 'bank' | 'messages' | 'dashbite' | 'profile' | 'beathub';
+export type AppId = 'home' | 'bank' | 'messages' | 'dashbite' | 'profile' | 'beathub' | 'instasnap' | 'viewtube' | 'loopvault' | 'maps';
 
 const APPS: { id: Exclude<AppId, 'home'>; name: string; glyph: ComponentChildren }[] = [
   {
     id: 'beathub',
     name: BRANDS.beatStore,
     glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 4v11.3A3.5 3.5 0 1 0 11 18.5V8h6V4z" /></svg>,
+  },
+  {
+    id: 'instasnap',
+    name: BRANDS.social,
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 3h10a4 4 0 0 1 4 4v10a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V7a4 4 0 0 1 4-4zm0 2a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm5 3.5a3.5 3.5 0 1 1 0 7 3.5 3.5 0 0 1 0-7zm0 2a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zM17 6a1 1 0 1 1 0 2 1 1 0 0 1 0-2z" /></svg>,
+  },
+  {
+    id: 'viewtube',
+    name: BRANDS.video,
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6.5A2.5 2.5 0 0 1 5.5 4h13A2.5 2.5 0 0 1 21 6.5v11a2.5 2.5 0 0 1-2.5 2.5h-13A2.5 2.5 0 0 1 3 17.5zM10 8.5v7l6-3.5z" /></svg>,
+  },
+  {
+    id: 'loopvault',
+    name: BRANDS.loopStore,
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 9h2v6H4zm4-3h2v12H8zm4 2h2v8h-2zm4-4h2v16h-2zm4 6h2v4h-2z" /></svg>,
+  },
+  {
+    id: 'maps',
+    name: BRANDS.maps,
+    glyph: <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 1 7 7c0 5-7 13-7 13S5 14 5 9a7 7 0 0 1 7-7zm0 4a3 3 0 1 0 0 6 3 3 0 0 0 0-6z" /></svg>,
   },
   {
     id: 'bank',
@@ -91,6 +115,10 @@ export function Phone({ sim, app, onOpenApp, onClose, onError }: Props) {
           {app === 'profile' && <ProfileApp sim={sim} />}
           {app === 'beathub' && <BeatHubApp sim={sim} onError={onError} />}
           {app === 'messages' && <MessagesApp sim={sim} />}
+          {app === 'instasnap' && <InstaSnapApp sim={sim} onError={onError} />}
+          {app === 'viewtube' && <ViewTubeApp sim={sim} onError={onError} />}
+          {app === 'loopvault' && <LoopVaultApp sim={sim} onError={onError} />}
+          {app === 'maps' && <MapsApp sim={sim} onError={onError} onClose={onClose} />}
         </div>
       </div>
       <button class="phone-home" aria-label="Close phone (P)" title="Close phone (P)" onClick={onClose} />

@@ -1,4 +1,4 @@
-import { STATE_VERSION, emptyBeatHub, type GameState } from '../sim/core/state';
+import { STATE_VERSION, emptyBeatHub, emptyGear, emptyLoops, emptySocial, type GameState } from '../sim/core/state';
 import { createRng } from '../sim/core/rng';
 import { initialTrends } from '../sim/trends';
 import { DEFAULT_LOOK_CHOICE } from '../content/looks';
@@ -83,6 +83,11 @@ const migrations: Record<number, (save: Record<string, unknown>) => Record<strin
   6: (save) => {
     const rng = save.rng as { seed: number };
     return { ...save, beathub: emptyBeatHub(), trends: initialTrends(createRng((rng.seed ^ 0x5eed) >>> 0)) };
+  },
+  // v7 -> v8: the city (location keeps working: the apartment is still 'apartment'), gear, LoopVault and social media.
+  7: (save) => {
+    const player = save.player as { background?: string };
+    return { ...save, gear: emptyGear(), loops: emptyLoops(), social: emptySocial(player.background ?? 'selfTaught') };
   },
 };
 

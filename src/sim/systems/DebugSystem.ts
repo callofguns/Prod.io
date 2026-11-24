@@ -4,6 +4,7 @@ import { pick } from '../core/rng';
 import { GENRES, defaultSettings, type GenreId } from '../../content/music';
 import { playerPattern } from '../debug/generatePattern';
 import { rateBeat } from '../quality/rateBeat';
+import { isAreaId } from '../../content/city';
 
 /** Cheats for playtesting. Reachable only from the debug panel. */
 export class DebugSystem implements System {
@@ -46,6 +47,18 @@ export class DebugSystem implements System {
         studio.nextBeatId++;
       }
       sim.events.emit('beathubChanged', {});
+      return ok;
+    });
+    sim.handle('debugAddAudience', ({ followers, subscribers }) => {
+      sim.state.social.insta.followers += Math.max(0, Math.round(followers));
+      sim.state.social.tube.subscribers += Math.max(0, Math.round(subscribers));
+      sim.events.emit('socialChanged', {});
+      return ok;
+    });
+    sim.handle('debugGoTo', ({ area }) => {
+      if (!isAreaId(area)) return fail('Unknown area');
+      if (sim.activity.isBusy()) return fail('You are busy.');
+      sim.city.moveTo(area, 'door');
       return ok;
     });
     sim.handle('debugSkipMinutes', ({ minutes }) => {
